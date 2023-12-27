@@ -5,11 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-
-class ToDo extends Model
+class Project extends Model
 {
     use HasFactory;
-    protected $table = 'todo';
+    protected $table = 'project';
     protected $fillable = [
                             'Name','UserID','FileID','Title',
                             'Description','StartDate','FinishDate',

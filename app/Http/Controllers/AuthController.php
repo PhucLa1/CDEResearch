@@ -38,7 +38,7 @@ class AuthController extends Controller
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-        $data = $request->validated();
+        $data = $request->all();
         $data['password'] = bcrypt($request->password);
         $user = User::create($data);
         return response()->json([

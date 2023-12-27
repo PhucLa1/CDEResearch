@@ -10,7 +10,7 @@ class Project extends Model
     use HasFactory;
     protected $table = 'project';
     protected $fillable = [
-                            'Name','UserID','FileID','Title',
+                            'ProjectName','UserID','FileID','Title',
                             'Description','StartDate','FinishDate',
                             'TDStatus','Priorities','Tag'
                         ];

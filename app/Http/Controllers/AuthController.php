@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Http\Requests\SignUpRequest;
 use App\Models\User;
+use App\Models\UserProject;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -76,6 +77,17 @@ class AuthController extends Controller
         auth()->user()->token = auth()->user()->createToken('API Token')->accessToken;
         return response()->json([
             'metadata' => auth()->user(),
+            'message' => 'Login users Successfully',
+            'status' => 'success',
+            'statusCode' => Response::HTTP_OK
+        ], Response::HTTP_OK);
+    }
+
+    public function checkRole($project_id){
+        $logUser = auth()->user()->id;
+        $roleInProject = UserProject::where('UserID','=','logUser')->where('ProjectID','=',$project_id)->first();
+        return response()->json([
+            'metadata' => $roleInProject,
             'message' => 'Login users Successfully',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK

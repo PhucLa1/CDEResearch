@@ -23,8 +23,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+//Auth
 Route::post('signup',[AuthController::class,'Register']);
 Route::post('login',[AuthController::class,'Login']);
+Route::get('checkRole',[AuthController::class,'checkRole']);
 
 //CRUD
 //Tag

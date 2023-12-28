@@ -1,14 +1,15 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\Project;
+use App\Models\UserProject;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
-use App\Models\Tag;
 
 
-class TagController extends Controller
+class ProjectController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,10 +17,10 @@ class TagController extends Controller
     public function index()
     {
         try{
-            $tag = Tag::all();
+            $project = Project::all();
             return response()->json([
-                'metadata' => $tag,
-                'message' => 'Get all records from Tag',
+                'metadata' => $project,
+                'message' => 'Get all records from Project',
                 'status' => 'success',
                 'statusCode' => Response::HTTP_OK
             ], Response::HTTP_OK);
@@ -40,11 +41,20 @@ class TagController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(),[
-            'TagName'=>'required|max:255'
+            'ProjectName'=>'required', 
+            'StartDate'=>'required',
+            'FinishDate'=>'required|after:StartDate',
         ],[
-            'TagName.required'=>'Tag Name must not be empty',
-            'TagName.max'=>'Length of tag name cannot be larger than 255'
+            'ProjectName.required'=>'Không được để trống tên',
+            'StartDate.required'=>'Không được để trống ngày bắt đầu',
+            'FinishDate.required'=>'Không được để trống ngày kết thúc',
+            'FinishDate.after'=>'Ngày kết thúc phải lớn hơn ngày bắt đầu'
         ]);
+        if($request->thumbnail != null){
+            $imageName = time().'.'.$request->thumbnail->extension();
+            $request->thumbnail->move(public_path('Upload'), $imageName);
+        }
+
         if($validator->fails()){
             return response([
                 "status" => "error",
@@ -52,9 +62,17 @@ class TagController extends Controller
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR); 
         }
-        $tag = Tag::create($request->all());
+        $data = $request->all();
+        $data['UserID'] = auth()->user()->id;
+        $project = Project::create($data);
+        $userProjectAdd = [
+            'UserID' => $data['UserID'],
+            'ProjectID' => $project->id,
+            'Role' => 1,
+        ];
+        $userProject = UserProject::create($userProjectAdd);
         return response()->json([
-            'metadata' => $tag,
+            'metadata' => $project,
             'message' => 'Create a record successfully',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK
@@ -67,8 +85,8 @@ class TagController extends Controller
     public function show($id)
     {
         //
-        $tag = Tag::findOrFail($id);
-        if(!$tag){
+        $project = Project::findOrFail($id);
+        if(!$project){
             return response([
                 "status" => "error",
                 "message" => 'Record not found',
@@ -76,7 +94,7 @@ class TagController extends Controller
             ], Response::HTTP_NOT_FOUND); 
         }
         return response()->json([
-            'metadata' => $tag,
+            'metadata' => $project,
             'message' => 'Update a record successfully',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK
@@ -88,13 +106,22 @@ class TagController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Tag $tag)
+    public function update(Request $request, Project $project)
     {
+        $logUser = auth()->user()->id;
+        $roleInProject = UserProject::where('UserID','=','logUser')->where('ProjectID','=',$project->id)->first();
+        if($logUser != $project->UserID && $roleInProject != 1){
+            return response([
+                "status" => "error",
+                "message" => 'Không phải người tạo ra dự án hoặc không phải admin nên không thể sửa dự án',
+                'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
+            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
+        }
         $validator = Validator::make($request->all(),[
-            'TagName'=>'required|unique:tag,TagName'
+            'ProjectName'=>'required|max:255'
         ],[
-            'TagName.required'=>'Tên Tag không được để trống',
-            'TagName.unique' => 'Tên Tag không được để lặp lại'
+            'ProjectName.required'=>'Project Name must not be empty',
+            'ProjectName.max'=>'Length of Project name cannot be larger than 255'
         ]);
         if($validator->fails()){
             return response([
@@ -103,16 +130,20 @@ class TagController extends Controller
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR); 
         }
-        if(!$tag){
+        if(!$project){
             return response([
                 "status" => "error",
                 "message" => 'Record not found',
                 'statusCode' => Response::HTTP_NOT_FOUND
             ], Response::HTTP_NOT_FOUND); 
         }
-        $tag->update($request->all());
+        if($request->thumbnail != null){
+            $imageName = time().'.'.$request->thumbnail->extension();
+            $request->thumbnail->move(public_path('Upload'), $imageName);
+        }
+        $project->update($request->all());
         return response()->json([
-            'metadata' => $tag,
+            'metadata' => $project,
             'message' => 'Update a record successfully',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK
@@ -122,16 +153,25 @@ class TagController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Tag $tag)
+    public function destroy(Project $project)
     {
-        if(!$tag){
+        if(!$project){
             return response([
                 "status" => "error",
                 "message" => 'Record not found',
                 'statusCode' => Response::HTTP_NOT_FOUND
             ], Response::HTTP_NOT_FOUND); 
         }
-        $tag->delete();
+        $logUser = auth()->user()->id;
+        $roleInProject = UserProject::where('UserID','=','logUser')->where('ProjectID','=',$project->id)->first();
+        if($logUser != $project->UserID && $roleInProject != 1){
+            return response([
+                "status" => "error",
+                "message" => 'Không phải admin không cho xóa dự án',
+                'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
+            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
+        }
+        $project->delete();
         return response()->json([
             'message' => 'Delete One Record Successfully',
             'status' => 'success',

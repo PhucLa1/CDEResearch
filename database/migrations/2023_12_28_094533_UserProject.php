@@ -11,14 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('Folder', function (Blueprint $table) {
+        Schema::create('UserProject', function (Blueprint $table) {
             $table->id();
-            $table->string('FolderName');
-            $table->integer('ParentID');
-            $table->tinyInteger('Status')->default(1);
-            $table->string('Tag')->nullable();
-            $table->integer('ProjectID');
             $table->string('UserID');
+            $table->integer('ProjectID');
+            $table->integer('Role');
             $table->timestamps();
         });
     }
@@ -28,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('Folder');
+        //
     }
 };

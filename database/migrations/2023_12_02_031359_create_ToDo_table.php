@@ -13,14 +13,17 @@ return new class extends Migration
     {
         Schema::create('ToDo', function (Blueprint $table) {
             $table->id();
-            $table->integer('UserID');
-            $table->integer('FileID');
+            $table->string('Name')->nullable();
+            $table->integer('UserID')->nullable();
+            $table->integer('FileID')->nullable();
             $table->string('Title');
-            $table->text('Descriptions');
+            $table->text('Descriptions')->nullable();
             $table->dateTime('StartDate');
             $table->dateTime('FinishDate');
-            $table->tinyInteger('TDStatus');
-            $table->tinyInteger('Priorities');
+            $table->tinyInteger('TDStatus')->default(0);
+            $table->tinyInteger('Priorities')->default(0);
+            $table->string('Tag')->nullable();
+            $table->integer('ProjectID');
             $table->timestamps();
         });
     }

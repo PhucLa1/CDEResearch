@@ -29,4 +29,4 @@ Route::post('login',[AuthController::class,'Login']);
 //CRUD
 Route::apiResource('tag',TagController::class)->middleware('auth:api');
 Route::apiResource('todo',ToDoController::class)->middleware('auth:api');
-Route::apiResource('project',ProjectController::class);
+Route::apiResource('project',ProjectController::class)->middleware('auth:api');

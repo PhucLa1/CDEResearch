@@ -91,10 +91,10 @@ class TagController extends Controller
     public function update(Request $request, Tag $tag)
     {
         $validator = Validator::make($request->all(),[
-            'TagName'=>'required|max:255'
+            'TagName'=>'required|unique:tag,TagName'
         ],[
-            'TagName.required'=>'Tag Name must not be empty',
-            'TagName.max'=>'Length of tag name cannot be larger than 255'
+            'TagName.required'=>'Tên Tag không được để trống',
+            'TagName.unique' => 'Tên Tag không được để lặp lại'
         ]);
         if($validator->fails()){
             return response([

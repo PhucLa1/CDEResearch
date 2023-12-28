@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('Project', function (Blueprint $table) {
             $table->id();
             $table->string('ProjectName');
-            $table->text('Note');
-            $table->string('thumbnails');
+            $table->text('Note')->nullable();
+            $table->string('thumbnails')->nullable();
             $table->dateTime('StartDate');
             $table->dateTime('FinishDate');
-            $table->tinyInteger('Status');
+            $table->integer('UserID');
+            $table->tinyInteger('Status')->default(1);
             $table->timestamps();
             $table->Integer('todo_permission')->default(0);
             $table->Integer('invite_permission')->default(0);

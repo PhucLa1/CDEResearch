@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('TagName');
             $table->tinyInteger('Status')->nullable();
+            $table->integer('ProjectID');
             $table->timestamps();
         });
     }

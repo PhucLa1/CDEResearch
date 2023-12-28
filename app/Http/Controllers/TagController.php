@@ -6,17 +6,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
 use App\Models\Tag;
-
+use App\Models\UserProject;
+use Illuminate\Support\Facades\DB;
 
 class TagController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index($project_id)
     {
         try{
-            $tag = Tag::all();
+            $tag = Tag::where('ProjectID','=',$project_id)->get();
             return response()->json([
                 'metadata' => $tag,
                 'message' => 'Get all records from Tag',
@@ -40,10 +41,12 @@ class TagController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(),[
-            'TagName'=>'required|max:255'
+            'TagName'=>'required|max:255',
+            'ProjectID' => 'required'
         ],[
-            'TagName.required'=>'Tag Name must not be empty',
-            'TagName.max'=>'Length of tag name cannot be larger than 255'
+            'TagName.required'=>'Không được để trống tag name',
+            'TagName.max'=>'Độ dài không được vượt quá 255',
+            'ProjectID.required'=>'Không được để trống id của project'
         ]);
         if($validator->fails()){
             return response([
@@ -88,7 +91,7 @@ class TagController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Tag $tag)
+    public function update(Request $request, Tag $tag,$project_id)
     {
         $validator = Validator::make($request->all(),[
             'TagName'=>'required|unique:tag,TagName'
@@ -96,6 +99,15 @@ class TagController extends Controller
             'TagName.required'=>'Tên Tag không được để trống',
             'TagName.unique' => 'Tên Tag không được để lặp lại'
         ]);
+        $logUser = auth()->user()->id;
+        $roleInProject = UserProject::where('UserID','=','logUser')->where('ProjectID','=',$project_id)->first();
+        if($roleInProject != 1){
+            return response([
+                "status" => "error",
+                "message" => 'Không phải admin nên không có quyền sửa',
+                'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
+            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
+        }
         if($validator->fails()){
             return response([
                 "status" => "error",
@@ -122,7 +134,7 @@ class TagController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Tag $tag)
+    public function destroy(Tag $tag,$project_id)
     {
         if(!$tag){
             return response([
@@ -131,9 +143,35 @@ class TagController extends Controller
                 'statusCode' => Response::HTTP_NOT_FOUND
             ], Response::HTTP_NOT_FOUND); 
         }
+        $logUser = auth()->user()->id;
+        $roleInProject = UserProject::where('UserID','=','logUser')->where('ProjectID','=',$project_id)->first();
+        if($roleInProject != 1){
+            return response([
+                "status" => "error",
+                "message" => 'Không phải admin nên không có quyền xóa',
+                'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
+            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
+        }
         $tag->delete();
         return response()->json([
             'message' => 'Delete One Record Successfully',
+            'status' => 'success',
+            'statusCode' => Response::HTTP_OK
+        ], Response::HTTP_OK);
+    }
+    public function removeAll($project_id){
+        $logUser = auth()->user()->id;
+        $roleInProject = UserProject::where('UserID','=','logUser')->where('ProjectID','=',$project_id)->first();
+        if($roleInProject != 1){
+            return response([
+                "status" => "error",
+                "message" => 'Không phải admin nên không có quyền xóa tất cả bản ghi',
+                'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
+            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
+        }
+        $tagRemove = DB::table('tag')->delete();
+        return response()->json([
+            'message' => 'Delete All Record Successfully',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK
         ], Response::HTTP_OK);

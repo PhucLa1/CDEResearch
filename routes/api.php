@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\ToDoController;
 use App\Models\ToDo;
@@ -28,3 +29,4 @@ Route::post('login',[AuthController::class,'Login']);
 //CRUD
 Route::apiResource('tag',TagController::class)->middleware('auth:api');
 Route::apiResource('todo',ToDoController::class)->middleware('auth:api');
+Route::apiResource('project',ProjectController::class);

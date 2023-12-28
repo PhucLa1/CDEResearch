@@ -38,7 +38,7 @@ class AuthController extends Controller
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-        $data = $request->validated();
+        $data = $request->all();
         $data['password'] = bcrypt($request->password);
         $user = User::create($data);
         return response()->json([
@@ -49,16 +49,17 @@ class AuthController extends Controller
         ], Response::HTTP_OK);
     }
 
-    public function Login(Request $request){
-        $validator = Validator::make($request->all(),[
-            'email'=>'required',
-            'password'=>'required'
-        ],[
-            'email.required' =>'Email must not be empty',
-            'password.required' =>'Password must not be empty'
+    public function Login(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required',
+            'password' => 'required'
+        ], [
+            'email.required' => 'Email must not be empty',
+            'password.required' => 'Password must not be empty'
         ]);
 
-        if($validator->fails()){
+        if ($validator->fails()) {
             return response([
                 "status" => "error",
                 "message" => $validator->errors(),

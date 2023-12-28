@@ -100,7 +100,7 @@ class TagController extends Controller
             'TagName.unique' => 'Tên Tag không được để lặp lại'
         ]);
         $logUser = auth()->user()->id;
-        $roleInProject = UserProject::where('UserID','=','logUser')->where('ProjectID','=',$project_id)->first();
+        $roleInProject = UserProject::where('UserID','=',$logUser)->where('ProjectID','=',$project_id)->first();
         if($roleInProject != 1){
             return response([
                 "status" => "error",
@@ -144,7 +144,7 @@ class TagController extends Controller
             ], Response::HTTP_NOT_FOUND); 
         }
         $logUser = auth()->user()->id;
-        $roleInProject = UserProject::where('UserID','=','logUser')->where('ProjectID','=',$project_id)->first();
+        $roleInProject = UserProject::where('UserID','=',$logUser)->where('ProjectID','=',$project_id)->first();
         if($roleInProject != 1){
             return response([
                 "status" => "error",
@@ -161,7 +161,7 @@ class TagController extends Controller
     }
     public function removeAll($project_id){
         $logUser = auth()->user()->id;
-        $roleInProject = UserProject::where('UserID','=','logUser')->where('ProjectID','=',$project_id)->first();
+        $roleInProject = UserProject::where('UserID','=',$logUser)->where('ProjectID','=',$project_id)->first();
         if($roleInProject != 1){
             return response([
                 "status" => "error",

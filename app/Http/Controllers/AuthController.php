@@ -85,7 +85,7 @@ class AuthController extends Controller
 
     public function checkRole($project_id){
         $logUser = auth()->user()->id;
-        $roleInProject = UserProject::where('UserID','=','logUser')->where('ProjectID','=',$project_id)->first();
+        $roleInProject = UserProject::where('UserID','=',$logUser)->where('ProjectID','=',$project_id)->first();
         return response()->json([
             'metadata' => $roleInProject,
             'message' => 'Login users Successfully',

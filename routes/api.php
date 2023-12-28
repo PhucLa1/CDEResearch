@@ -7,7 +7,6 @@ use App\Http\Controllers\FolderController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\ToDoController;
-use App\Http\Controllers\TagController;
 
 /*
 |--------------------------------------------------------------------------

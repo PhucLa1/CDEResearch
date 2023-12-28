@@ -26,7 +26,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //Auth
 Route::post('signup',[AuthController::class,'Register']);
 Route::post('login',[AuthController::class,'Login']);
-Route::get('checkRole',[AuthController::class,'checkRole']);
+Route::get('checkRole/{project_id}',[AuthController::class,'checkRole'])->middleware('auth:api');
 
 //CRUD
 //Tag

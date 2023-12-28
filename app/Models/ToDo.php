@@ -13,6 +13,8 @@ class ToDo extends Model
     protected $fillable = [
                             'Name','UserID','FileID','Title',
                             'Description','StartDate','FinishDate',
-                            'TDStatus','Priorities','Tag'
+                            'TDStatus','Priorities','Tag','ProjectID'
                         ];
+
+
 }

@@ -9,11 +9,21 @@ use App\Models\ToDo;
 use App\Models\Tag;
 class ToDoController extends Controller
 {
-    public function index(){
+    public function index($project_id,$todo_permission){
         try{
-            $todo = ToDo::all();
+            if($todo_permission == 0){
+                $todos = ToDo::where('ProjectID','=',$project_id)->get();
+                return response()->json([
+                    'metadata' => $todos,
+                    'message' => 'Get all records from ToDo',
+                    'status' => 'success',
+                    'statusCode' => Response::HTTP_OK
+                ], Response::HTTP_OK);
+            }
+            $loguser = auth()->user()->id;
+            $todos = ToDo::where('ProjectID','=',$project_id)->where('UserID','=',$loguser)->get();
             return response()->json([
-                'metadata' => $todo,
+                'metadata' => $todos,
                 'message' => 'Get all records from ToDo',
                 'status' => 'success',
                 'statusCode' => Response::HTTP_OK
@@ -32,11 +42,13 @@ class ToDoController extends Controller
             'Title' => 'required',
             'StartDate' => 'required',
             'FinishDate' => 'required|after:StartDate',
+            'ProjectID' => 'required'
         ],[
             'Title.required' => 'Title must not be empty',
             'StartDate.required' => 'StartDate must not be empty',
             'FinishDate.required' => 'FinishDate must not be empty',
-            'FinishDate.after' => 'FinishDate must be larger than StartDate'
+            'FinishDate.after' => 'FinishDate must be larger than StartDate',
+            'ProjectID.required' => 'ProjectID must not be empty'
         ]);
         if($validator->fails()){
             return response([
@@ -45,9 +57,12 @@ class ToDoController extends Controller
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR); 
         }
-        $todo = Todo::create($request->all());
+        $data = $request->all();
+        $data['Name'] = 'TODO';
+        $todo = Todo::create($data);
+        $returnData = Todo::find($todo->id);
         return response()->json([
-            'metadata' => $todo,
+            'metadata' => $returnData,
             'message' => 'Create a record successfully',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK
@@ -59,11 +74,13 @@ class ToDoController extends Controller
             'Title' => 'required',
             'StartDate' => 'required',
             'FinishDate' => 'required|after:StartDate',
+            'ProjectID' => 'required'
         ],[
             'Title.required' => 'Title must not be empty',
             'StartDate.required' => 'StartDate must not be empty',
             'FinishDate.required' => 'FinishDate must not be empty',
-            'FinishDate.after' => 'FinishDate must be larger than StartDate'
+            'FinishDate.after' => 'FinishDate must be larger than StartDate',
+            'ProjectID.required' => 'ProjectID must not be empty'
         ]);
         if($validator->fails()){
             return response([

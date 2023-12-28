@@ -22,6 +22,8 @@ return new class extends Migration
             $table->dateTime('FinishDate');
             $table->tinyInteger('TDStatus')->default(0);
             $table->tinyInteger('Priorities')->default(0);
+            $table->string('Tag')->nullable();
+            $table->integer('ProjectID');
             $table->timestamps();
         });
     }

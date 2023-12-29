@@ -91,7 +91,7 @@ class TagController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Tag $tag,$project_id)
+    public function update(Request $request, $id,$project_id)
     {
         $validator = Validator::make($request->all(),[
             'TagName'=>'required|unique:tag,TagName'
@@ -100,7 +100,7 @@ class TagController extends Controller
             'TagName.unique' => 'Tên Tag không được để lặp lại'
         ]);
         $logUser = auth()->user()->id;
-        $roleInProject = UserProject::where('UserID','=',$logUser)->where('ProjectID','=',$project_id)->first();
+        $roleInProject = UserProject::where('UserID','=',$logUser)->where('ProjectID','=',$project_id)->first()->Role;
         if($roleInProject != 1){
             return response([
                 "status" => "error",
@@ -115,6 +115,7 @@ class TagController extends Controller
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR); 
         }
+        $tag = Tag::find($id);
         if(!$tag){
             return response([
                 "status" => "error",
@@ -134,8 +135,9 @@ class TagController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Tag $tag,$project_id)
+    public function destroy($id,$project_id)
     {
+        $tag = Tag::find($id);
         if(!$tag){
             return response([
                 "status" => "error",
@@ -144,7 +146,7 @@ class TagController extends Controller
             ], Response::HTTP_NOT_FOUND); 
         }
         $logUser = auth()->user()->id;
-        $roleInProject = UserProject::where('UserID','=',$logUser)->where('ProjectID','=',$project_id)->first();
+        $roleInProject = UserProject::where('UserID','=',$logUser)->where('ProjectID','=',$project_id)->first()->Role;
         if($roleInProject != 1){
             return response([
                 "status" => "error",
@@ -161,7 +163,7 @@ class TagController extends Controller
     }
     public function removeAll($project_id){
         $logUser = auth()->user()->id;
-        $roleInProject = UserProject::where('UserID','=',$logUser)->where('ProjectID','=',$project_id)->first();
+        $roleInProject = UserProject::where('UserID','=',$logUser)->where('ProjectID','=',$project_id)->first()->Role;
         if($roleInProject != 1){
             return response([
                 "status" => "error",

@@ -45,7 +45,8 @@ Route::prefix('teams')->group(function(){
     Route::get('/{project_id}',[JoinController::class,'index'])->middleware('auth:api');
     Route::get('join/{project_id}/{user_id}',[JoinController::class,'AcceptRequest']);
     Route::post('/sendEmail',[JoinController::class,'SendEmail'])->middleware('auth:api');
-
+    Route::put('/changeRole/{project_id}/{user_id}/{role}',[JoinController::class,'updateRole'])->middleware('auth:api');
+    Route::delete('/{project_id}/{user_id}',[JoinController::class,'destroy'])->middleware('auth:api');
 });
 
 

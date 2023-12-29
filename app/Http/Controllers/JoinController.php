@@ -91,4 +91,40 @@ class JoinController extends Controller
         $userProject = UserProject::where('ProjectID',$project_id)->where('UserID',$user_id)->update(['Status' => 1]);
         return Redirect::away('https://www.youtube.com/watch?v=mnjaCqz-Qi8');
     }
+
+    public function updateRole($project_id,$user_id,$role){
+        $logUser = User::returnRole($project_id);
+        if($logUser == 0){
+            return response([
+                "status" => "error",
+                "message" => 'Bạn không phải admin dự án nên không cho thay đổi role',
+                'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
+            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
+        }
+        $userProject = UserProject::where('ProjectID',$project_id)->where('UserID',$user_id)->update(['Role' => $role]);
+
+        return response()->json([
+            'message' => 'Chuyển role thành công',
+            'status' => 'success',
+            'statusCode' => Response::HTTP_OK
+        ], Response::HTTP_OK);
+    }
+
+    public function destroy($project_id,$user_id){
+        $logUser = User::returnRole($project_id);
+        if($logUser == 0){
+            return response([
+                "status" => "error",
+                "message" => 'Bạn không phải admin dự án nên không cho xóa người ra khỏi dự án',
+                'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
+            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
+        }
+        $userProject = UserProject::where('ProjectID',$project_id)->where('UserID',$user_id)->delete();
+        return response()->json([
+            'metadata' => $userProject,
+            'message' => 'Xóa người dùng thành công',
+            'status' => 'success',
+            'statusCode' => Response::HTTP_OK
+        ], Response::HTTP_OK);
+    }
 }

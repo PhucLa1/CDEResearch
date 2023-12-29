@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('UserProject', function (Blueprint $table) {
             $table->id();
-            $table->string('UserID');
+            $table->integer('UserID');
             $table->integer('ProjectID');
-            $table->integer('Role');
+            $table->integer('Role')->default(0);
+            $table->integer('Status')->default(0);
             $table->timestamps();
         });
     }

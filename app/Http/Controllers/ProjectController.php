@@ -69,6 +69,7 @@ class ProjectController extends Controller
             'UserID' => $data['UserID'],
             'ProjectID' => $project->id,
             'Role' => 1,
+            'Status' => 1
         ];
         $userProject = UserProject::create($userProjectAdd);
         return response()->json([
@@ -167,7 +168,7 @@ class ProjectController extends Controller
         if($logUser != $project->UserID && $roleInProject != 1){
             return response([
                 "status" => "error",
-                "message" => 'Không phải admin không cho xóa dự án',
+                "message" => 'Không phải admin hoặc không phải người tạo ra dự án thì không cho xóa dự án',
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR); 
         }

@@ -80,7 +80,7 @@ class TagController extends Controller
         }
         return response()->json([
             'metadata' => $tag,
-            'message' => 'Update a record successfully',
+            'message' => 'Show a record successfully',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK
         ], Response::HTTP_OK);

@@ -45,4 +45,10 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public static function returnRole($project_id){
+        $logUser = auth()->user()->id;
+        $roleInProject = UserProject::where('UserID','=',$logUser)->where('ProjectID','=',$project_id)->first();
+        return $roleInProject->Role;
+    }
 }

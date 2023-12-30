@@ -41,12 +41,13 @@ class TagController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(),[
-            'TagName'=>'required|max:255',
+            'TagName'=>'required|max:255|unique:tag',
             'ProjectID' => 'required'
         ],[
             'TagName.required'=>'Không được để trống tag name',
             'TagName.max'=>'Độ dài không được vượt quá 255',
-            'ProjectID.required'=>'Không được để trống id của project'
+            'ProjectID.required'=>'Không được để trống id của project',
+            'TagName.unique' => 'Tên tag đã được lấy rồi'
         ]);
         if($validator->fails()){
             return response([
@@ -94,10 +95,11 @@ class TagController extends Controller
     public function update(Request $request, $id,$project_id)
     {
         $validator = Validator::make($request->all(),[
-            'TagName'=>'required|unique:tag,TagName'
+            'TagName'=>'required|max:255|unique:tag',
         ],[
-            'TagName.required'=>'Tên Tag không được để trống',
-            'TagName.unique' => 'Tên Tag không được để lặp lại'
+            'TagName.required'=>'Không được để trống tag name',
+            'TagName.max'=>'Độ dài không được vượt quá 255',
+            'TagName.unique' => 'Tên tag đã được lấy rồi'
         ]);
         $logUser = auth()->user()->id;
         $roleInProject = UserProject::where('UserID','=',$logUser)->where('ProjectID','=',$project_id)->first()->Role;
@@ -171,7 +173,7 @@ class TagController extends Controller
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR); 
         }
-        $tagRemove = DB::table('tag')->delete();
+        $tagRemove = Tag::where('ProjectID',$project_id)->delete();
         return response()->json([
             'message' => 'Delete All Record Successfully',
             'status' => 'success',

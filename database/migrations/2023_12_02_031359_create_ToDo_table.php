@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('ToDo', function (Blueprint $table) {
             $table->id();
             $table->string('Name')->nullable();
-            $table->integer('UserID')->nullable();
+            $table->integer('AssginTo')->nullable();
             $table->integer('FileID')->nullable();
             $table->string('Title');
             $table->text('Descriptions')->nullable();
@@ -24,6 +24,7 @@ return new class extends Migration
             $table->tinyInteger('Priorities')->default(0);
             $table->string('Tag')->nullable();
             $table->integer('ProjectID');
+            $table->integer('UserID');
             $table->timestamps();
         });
     }

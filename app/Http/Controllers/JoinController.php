@@ -29,7 +29,7 @@ class JoinController extends Controller
         });
         return response()->json([
             'metadata' => $teams,
-            'message' => 'Get all records from Tag',
+            'message' => 'Get all records from Teams',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK
         ], Response::HTTP_OK);
@@ -101,6 +101,15 @@ class JoinController extends Controller
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR); 
         }
+        //phải có ít nhất một admin
+        $roleAdminCount = UserProject::where('ProjectID',$project_id)->where('Status',1)->where('Role',1)->count();
+        if($roleAdminCount == 1 && $role == 0 && $user_id == auth()->user()->id){
+            return response([
+                "status" => "error",
+                "message" => 'Có mỗi ông là admin mà ông lại chuyển về user, dự án phải có ít nhất 1 admin',
+                'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
+            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
+        }
         $userProject = UserProject::where('ProjectID',$project_id)->where('UserID',$user_id)->update(['Role' => $role]);
 
         return response()->json([
@@ -112,14 +121,17 @@ class JoinController extends Controller
 
     public function destroy($project_id,$user_id){
         $logUser = User::returnRole($project_id);
-        if($logUser == 0){
+        $userID = UserProject::where('UserID','=',$user_id)->where('ProjectID','=',$project_id)->first()->UserID;
+        $userProject = UserProject::where('ProjectID',$project_id)->where('UserID',$user_id)->first();
+        if($logUser == 0 && $userProject->UserID != $userID){
+            //Không phải admin và người xóa không phải là chính mình
             return response([
                 "status" => "error",
                 "message" => 'Bạn không phải admin dự án nên không cho xóa người ra khỏi dự án',
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR); 
         }
-        $userProject = UserProject::where('ProjectID',$project_id)->where('UserID',$user_id)->delete();
+        $userProject->delete();
         return response()->json([
             'metadata' => $userProject,
             'message' => 'Xóa người dùng thành công',

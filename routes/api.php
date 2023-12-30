@@ -24,23 +24,23 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-//Auth
+//Auth - Đã test
 Route::post('signup',[AuthController::class,'Register']);
 Route::post('login',[AuthController::class,'Login']);
 Route::get('checkRole/{project_id}',[AuthController::class,'checkRole'])->middleware('auth:api');
 
 //CRUD
-//Tag
+//Tag - đã test
 Route::prefix('tag')->group(function(){
     Route::get('showAll/{project_id}',[TagController::class,'index'])->middleware('auth:api');
     Route::get('/{id}',[TagController::class,'show'])->middleware('auth:api');
     Route::post('/',[TagController::class,'store'])->middleware('auth:api');
     Route::put('/{id}/{project_id}',[TagController::class,'update'])->middleware('auth:api');
     Route::delete('/{id}/{project_id}',[TagController::class,'destroy'])->middleware('auth:api');
-    Route::delete('/removeAll/{project_id}',[TagController::class,'removeAll'])->middleware('auth:api');
+    Route::get('/removeAll/{project_id}',[TagController::class,'removeAll'])->middleware('auth:api');
 });
 
-//Teams join
+//Teams join - Đẫ test
 Route::prefix('teams')->group(function(){
     Route::get('/{project_id}',[JoinController::class,'index'])->middleware('auth:api');
     Route::get('join/{project_id}/{user_id}',[JoinController::class,'AcceptRequest']);
@@ -49,6 +49,14 @@ Route::prefix('teams')->group(function(){
     Route::delete('/{project_id}/{user_id}',[JoinController::class,'destroy'])->middleware('auth:api');
 });
 
-
+//Project - Đã test
+Route::prefix('project')->group(function(){
+    Route::get('/',[ProjectController::class,'index'])->middleware('auth:api');
+    Route::post('',[ProjectController::class,'store'])->middleware('auth:api');;
+    Route::get('/{id}',[ProjectController::class,'show'])->middleware('auth:api');
+    Route::put('/{id}',[ProjectController::class,'update'])->middleware('auth:api');
+    Route::put('/changePermiss/{id}',[ProjectController::class,'changePermission'])->middleware('auth:api');
+    Route::delete('/{id}',[ProjectController::class,'destroy'])->middleware('auth:api');
+});
 Route::apiResource('todo',ToDoController::class)->middleware('auth:api');
 Route::apiResource('project',ProjectController::class)->middleware('auth:api');

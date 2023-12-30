@@ -16,9 +16,9 @@ return new class extends Migration
             $table->string('FolderName');
             $table->integer('ParentID');
             $table->tinyInteger('Status')->default(1);
-            $table->string('Tag')->nullable();
             $table->integer('ProjectID');
-            $table->string('UserID');
+            $table->integer('UserID');
+            $table->string('Tag',100)->nullable();
             $table->timestamps();
         });
     }

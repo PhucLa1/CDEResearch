@@ -9,5 +9,5 @@ class Tag extends Model
 {
     use HasFactory;
     protected $table = 'tag';
-    protected $fillable = ['TagName'];
+    protected $fillable = ['TagName','ProjectID'];
 }

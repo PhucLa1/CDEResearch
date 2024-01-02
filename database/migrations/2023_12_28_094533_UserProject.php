@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('FileTag', function (Blueprint $table) {
+        Schema::create('UserProject', function (Blueprint $table) {
             $table->id();
-            $table->integer('FileID');
-            $table->integer('TagID');
-            $table->integer('Status');
+            $table->integer('UserID');
+            $table->integer('ProjectID');
+            $table->integer('Role')->default(0);
+            $table->integer('Status')->default(0);
             $table->timestamps();
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('FileTag');
+        //
     }
 };

@@ -7,7 +7,9 @@ use Illuminate\Http\Response;
 use App\Http\Requests\SignUpRequest;
 use App\Models\User;
 use App\Models\UserProject;
+use COM;
 use Illuminate\Support\Facades\Validator;
+
 
 
 class AuthController extends Controller
@@ -83,6 +85,10 @@ class AuthController extends Controller
         ], Response::HTTP_OK);
     }
 
+    // public function logout(){
+    //     $cookies = Cookie::forget('jwt');
+    // }
+
     public function checkRole($project_id){
         $logUser = auth()->user()->id;
         $roleInProject = UserProject::where('UserID','=',$logUser)->where('ProjectID','=',$project_id)->first();
@@ -92,5 +98,8 @@ class AuthController extends Controller
             'status' => 'success',
             'statusCode' => Response::HTTP_OK
         ], Response::HTTP_OK);
+    }
+    public function check(){
+        return auth()->user();
     }
 }

@@ -11,21 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ToDo', function (Blueprint $table) {
-            $table->id();
-            $table->string('Name')->nullable();
-            $table->integer('AssginTo')->nullable();
-            $table->integer('FileID')->nullable();
-            $table->string('Title');
-            $table->text('Descriptions')->nullable();
-            $table->dateTime('StartDate');
-            $table->dateTime('FinishDate');
-            $table->tinyInteger('TDStatus')->default(0);
-            $table->tinyInteger('Priorities')->default(0);
-            $table->string('Tag')->nullable();
-            $table->integer('ProjectID');
-            $table->integer('UserID');
+        Schema::create('todo', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name')->nullable();
+            $table->integer('assgin_to')->nullable();
+            $table->unsignedInteger('explorer_id')->nullable();
+            $table->string('title');
+            $table->text('descriptions')->nullable();
+            $table->dateTime('start_date');
+            $table->dateTime('finish_date');
+            $table->tinyInteger('priorities');
+            $table->string('tag')->nullable();
+            $table->unsignedInteger('project_id');
             $table->timestamps();
+
+            //foreign key
+            // $table->foreign('project_id')->references('id')->on('project');
+            // $table->foreign('explorer_id')->references('id')->on('explorer');
         });
     }
 
@@ -34,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ToDo');
+        Schema::dropIfExists('todo');
     }
 };

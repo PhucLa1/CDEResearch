@@ -23,7 +23,8 @@ class User extends Authenticatable
         'password',
         'NumberPhone',
         'Unit',
-        'Expertise'
+        'Expertise',
+        'avatar',
     ];
 
     /**
@@ -48,7 +49,7 @@ class User extends Authenticatable
 
     public static function returnRole($project_id){
         $logUser = auth()->user()->id;
-        $roleInProject = UserProject::where('UserID','=',$logUser)->where('ProjectID','=',$project_id)->first();
-        return $roleInProject->Role;
+        $roleInProject = UserProject::where('user_id','=',$logUser)->where('project_id','=',$project_id)->first();
+        return $roleInProject->role;
     }
 }

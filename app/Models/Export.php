@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Tag extends Model
+class Export extends Model
 {
     use HasFactory;
-    protected $table = 'tag';
-    protected $fillable = ['name','project_id'];
+    protected $table = 'export';
+    protected $fillable = [
+        'name', 'note','explorer_id'
+    ];
 }

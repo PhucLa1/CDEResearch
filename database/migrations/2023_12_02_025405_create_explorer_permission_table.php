@@ -11,14 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('export', function (Blueprint $table) {
+        Schema::create('explorer_permission', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name', 50);
-            $table->text('note');
+            $table->unsignedInteger('user_id');
             $table->unsignedInteger('explorer_id');
+            $table->tinyInteger('permission');
             $table->timestamps();
 
             // //foreign key
+            // $table->foreign('user_id')->references('id')->on('users');
             // $table->foreign('explorer_id')->references('id')->on('explorer');
         });
     }
@@ -28,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('export');
+        Schema::dropIfExists('explorer_permission');
     }
 };

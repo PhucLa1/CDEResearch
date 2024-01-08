@@ -18,13 +18,13 @@ class JoinController extends Controller
 {
     //
     public function index($project_id){
-        $teams = UserProject::where('ProjectId', $project_id)
+        $teams = UserProject::where('project_id', $project_id)
         ->with('user')
         ->with('project')
         ->get()
         ->map(function($team){
-            $team->Role = ($team->Role = 1)?'Admin':'User';
-            $team->Status = ($team->Status = 1)?'Active':'Pending Invite';
+            $team->role = ($team->Role = 1)?'Admin':'User';
+            $team->status = ($team->Status = 1)?'Active':'Pending Invite';
             return $team;
         });
         return response()->json([
@@ -37,18 +37,18 @@ class JoinController extends Controller
 
     public function SendEmail(Request $request){
         $validator = Validator::make($request->all(),[
-            'ProjectID' => 'required',
-            'UserID' => ['required',        
-                        Rule::unique('userproject')->where(function ($query) use ($request) {
-                            return $query->where('ProjectID', $request->ProjectID);
+            'project_id' => 'required',
+            'user_id' => ['required',        
+                        Rule::unique('user_project')->where(function ($query) use ($request) {
+                            return $query->where('project_id', $request->project_id);
                         })],
-            'Role' => 'required',
+            'role' => 'required',
             
         ],[
-            'ProjectID.required' => 'Id của project không được để trống ',
-            'UserID.required' => 'Id của user không được để trống',
-            'UserID.unique' => 'Cặp ProjectID và UserID đã tồn tại',
-            'Role.required' => 'Role của người dùng trong dự án đó phải được chọn'
+            'project_id.required' => 'Id của project không được để trống ',
+            'user_id.required' => 'Id của user không được để trống',
+            'user_id.unique' => 'Cặp ProjectID và UserID đã tồn tại',
+            'role.required' => 'Role của người dùng trong dự án đó phải được chọn'
         ]);
         if($validator->fails()){
             return response([
@@ -57,8 +57,9 @@ class JoinController extends Controller
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR); 
         }
-        $project = Project::find($request->ProjectID);
-        if($project->invite_permission == 1 && User::returnRole($request->ProjectID) == 0){
+        $project_id = $request->project_id;
+        $project = Project::find($project_id);
+        if($project->invite_permission == 1 && User::returnRole($project_id) == 0){
             // nếu project chỉ cho admin mời
             // Thằng đăng nhập cũng không phải admin
             return response([
@@ -70,13 +71,13 @@ class JoinController extends Controller
         $userAddPendingInvite = UserProject::create($request->all());
         //Send Email
         $logUser = auth()->user()->id;
-        $userIds = [$logUser, $request->UserID];
+        $userIds = [$logUser, $request->user_id];
         $users = User::findMany($userIds);
         
         $dataReturn = [
             'userSend' => $users->firstWhere('id', $logUser),
-            'userReceive' => $users->firstWhere('id', $request->UserID),
-            'project' => Project::find($request->ProjectID)
+            'userReceive' => $users->firstWhere('id', $request->user_id),
+            'project' => Project::find($request->project_id)
         ];
         Mail::to($dataReturn['userReceive']->email)->send(new RequestMail($dataReturn));
 
@@ -88,7 +89,7 @@ class JoinController extends Controller
     }
 
     public function AcceptRequest($project_id,$user_id){
-        $userProject = UserProject::where('ProjectID',$project_id)->where('UserID',$user_id)->update(['Status' => 1]);
+        $userProject = UserProject::where('project_id',$project_id)->where('user_id',$user_id)->update(['status' => 1]);
         return Redirect::away('https://www.youtube.com/watch?v=mnjaCqz-Qi8');
     }
 
@@ -102,7 +103,7 @@ class JoinController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR); 
         }
         //phải có ít nhất một admin
-        $roleAdminCount = UserProject::where('ProjectID',$project_id)->where('Status',1)->where('Role',1)->count();
+        $roleAdminCount = UserProject::where('project_id',$project_id)->where('status',1)->where('role',1)->count();
         if($roleAdminCount == 1 && $role == 0 && $user_id == auth()->user()->id){
             return response([
                 "status" => "error",
@@ -110,7 +111,7 @@ class JoinController extends Controller
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR); 
         }
-        $userProject = UserProject::where('ProjectID',$project_id)->where('UserID',$user_id)->update(['Role' => $role]);
+        $userProject = UserProject::where('project_id',$project_id)->where('user_id',$user_id)->update(['role' => $role]);
 
         return response()->json([
             'message' => 'Chuyển role thành công',
@@ -120,10 +121,9 @@ class JoinController extends Controller
     }
 
     public function destroy($project_id,$user_id){
-        $logUser = User::returnRole($project_id);
-        $userID = UserProject::where('UserID','=',$user_id)->where('ProjectID','=',$project_id)->first()->UserID;
-        $userProject = UserProject::where('ProjectID',$project_id)->where('UserID',$user_id)->first();
-        if($logUser == 0 && $userProject->UserID != $userID){
+        $logUser = auth()->user()->id;
+        $userProject = UserProject::where('project_id',$project_id)->where('user_id',$user_id)->first();
+        if(User::returnRole($project_id) == 0 && $logUser != $userProject->user_id){
             //Không phải admin và người xóa không phải là chính mình
             return response([
                 "status" => "error",

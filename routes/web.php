@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\GoogleLoginController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -15,4 +15,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
+});
+// Route::group(['middleware' => 'web'], function () {
+//     
+// });
+Route::group(['middleware' => 'web'], function () {
+    Route::get('/google/redirect', [GoogleLoginController::class, 'redirectToGoogle']);
+    Route::get('auth/google/callback', [GoogleLoginController::class, 'handleGoogleCallback']);
 });

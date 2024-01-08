@@ -19,10 +19,11 @@ class ProjectController extends Controller
     public function index()
     {
         try {
-            $project = Project::all();
+            $project = Project::join('user_project','project.id','=','user_project.project_id')
+                                ->where('user_project.user_id',auth()->user()->id)->get();
             return response()->json([
                 'metadata' => $project,
-                'message' => 'Get all records from Project',
+                'message' => 'Lấy tất cả bản ghi của dự án',
                 'status' => 'success',
                 'statusCode' => Response::HTTP_OK
             ], Response::HTTP_OK);
@@ -44,14 +45,14 @@ class ProjectController extends Controller
     {
         $imageName = null;
         $validator = Validator::make($request->all(), [
-            'ProjectName' => 'required',
-            'StartDate' => 'required',
-            'FinishDate' => 'required|after:StartDate'
+            'name' => 'required',
+            'start_date' => 'required',
+            'finish_date' => 'required|after:StartDate'
         ], [
-            'ProjectName.required' => 'Không được để trống tên',
-            'StartDate.required' => 'Không được để trống ngày bắt đầu',
-            'FinishDate.required' => 'Không được để trống ngày kết thúc',
-            'FinishDate.after' => 'Ngày kết thúc phải lớn hơn ngày bắt đầu'
+            'name.required' => 'Không được để trống tên',
+            'start_date.required' => 'Không được để trống ngày bắt đầu',
+            'finish_date.required' => 'Không được để trống ngày kết thúc',
+            'finish_date.after' => 'Ngày kết thúc phải lớn hơn ngày bắt đầu'
         ]);
         if ($request->thumbnails != null) {
             $imageName = time() . '.' . $request->thumbnails->extension();
@@ -67,19 +68,19 @@ class ProjectController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         $data = $request->all();
-        $data['UserID'] = auth()->user()->id;
+        $data['user_id'] = auth()->user()->id;
         $data['thumbnails'] = $imageName;
         $project = Project::create($data);
         $userProjectAdd = [
-            'UserID' => $data['UserID'],
-            'ProjectID' => $project->id,
-            'Role' => 1,
-            'Status' => 1
+            'user_id' => $data['user_id'],
+            'project_id' => $project->id,
+            'role' => 1,
+            'status' => 1
         ];
         $userProject = UserProject::create($userProjectAdd);
         return response()->json([
             'metadata' => $project,
-            'message' => 'Create a record successfully',
+            'message' => 'Thêm mới 1 dự án thành công',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK
         ], Response::HTTP_OK);
@@ -117,24 +118,22 @@ class ProjectController extends Controller
         
         $project = Project::findOrFail($id);
         $imageName = $project->thumbnails;
-        $logUser = auth()->user()->id;
-        $roleInProject = UserProject::where('UserID', '=', $logUser)->where('ProjectID', '=', $project->id)->first()->Role;
-        if ($logUser != $project->UserID && $roleInProject != 1) {
+        if (User::returnRole($id) == 0) {
             return response([
                 "status" => "error",
-                "message" => 'Không phải người tạo ra dự án hoặc không phải admin nên không thể sửa dự án',
+                "message" => 'không phải admin nên không thể sửa dự án',
                 'statusCode' => Response::HTTP_FORBIDDEN
             ], Response::HTTP_FORBIDDEN);
         }
         $validator = Validator::make($request->all(), [
-            'ProjectName' => 'required',
-            'StartDate' => 'required',
-            'FinishDate' => 'required|after:StartDate',
+            'name' => 'required',
+            'start_date' => 'required',
+            'finish_date' => 'required|after:StartDate',
         ], [
-            'ProjectName.required' => 'Không được để trống tên',
-            'StartDate.required' => 'Không được để trống ngày bắt đầu',
-            'FinishDate.required' => 'Không được để trống ngày kết thúc',
-            'FinishDate.after' => 'Ngày kết thúc phải lớn hơn ngày bắt đầu'
+            'name.required' => 'Không được để trống tên',
+            'start_date.required' => 'Không được để trống ngày bắt đầu',
+            'finish_date.required' => 'Không được để trống ngày kết thúc',
+            'finish_date.after' => 'Ngày kết thúc phải lớn hơn ngày bắt đầu'
         ]);
         if ($validator->fails()) {
             return response([
@@ -146,7 +145,7 @@ class ProjectController extends Controller
         if (!$project) {
             return response([
                 "status" => "error",
-                "message" => 'Record not found',
+                "message" => 'Không tìm thấy bản ghi',
                 'statusCode' => Response::HTTP_NOT_FOUND
             ], Response::HTTP_NOT_FOUND);
         }
@@ -167,7 +166,7 @@ class ProjectController extends Controller
         $project->update($data);
         return response()->json([
             'metadata' => $project,
-            'message' => 'Update a record successfully',
+            'message' => 'Sửa dự án thành công',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK
         ], Response::HTTP_OK);
@@ -188,11 +187,11 @@ class ProjectController extends Controller
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-        if(User::returnRole($project->id) == 0){
+        if(User::returnRole($id) == 0){
             //kp admin
             return response([
                 "status" => "error",
-                "message" => 'Không phải admin ai cho ông thay đổi quyền hạn',
+                "message" => 'Không phải admin nên không thể thay đổi quyền hạn dự án',
                 'statusCode' => Response::HTTP_FORBIDDEN
             ], Response::HTTP_FORBIDDEN);
         }
@@ -217,9 +216,7 @@ class ProjectController extends Controller
                 'statusCode' => Response::HTTP_NOT_FOUND
             ], Response::HTTP_NOT_FOUND);
         }
-        $logUser = auth()->user()->id;
-        $roleInProject = UserProject::where('UserID', '=', $logUser)->where('ProjectID', '=', $project->id)->first()->Role;
-        if ($roleInProject != 1) {
+        if (User::returnRole($id) == 0) {
             return response([
                 "status" => "error",
                 "message" => 'Không phải admin thì không cho xóa dự án',

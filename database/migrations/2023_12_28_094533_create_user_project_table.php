@@ -11,14 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tag', function (Blueprint $table) {
+        Schema::create('user_project', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name');
+            $table->unsignedInteger('user_id');
             $table->unsignedInteger('project_id');
+            $table->integer('role'); //0: user, 1:admin
+            $table->tinyInteger('status')->default(0); //0:pending, 1:active
             $table->timestamps();
 
             //foreign key
-            //$table->foreign('project_id')->references('id')->on('project');
+            // $table->foreign('user_id')->references('id')->on('users');
+            // $table->foreign('project_id')->references('id')->on('project');
         });
     }
 
@@ -27,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tag');
+        Schema::dropIfExists('user_project');
     }
 };

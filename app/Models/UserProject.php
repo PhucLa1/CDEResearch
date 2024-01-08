@@ -8,13 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class UserProject extends Model
 {
     use HasFactory;
-    protected $table = 'userproject';
-    protected $fillable = ['UserID','ProjectID','Role','Status'];
+    protected $table = 'user_project';
+    protected $fillable = ['user_id','project_id','role','status'];
 
     public function user(){
-        return $this->belongsTo(User::class,'UserID');
+        return $this->belongsTo(User::class,'user_id');
     }
     public function project(){
-        return $this->belongsTo(Project::class,'ProjectID');
+        return $this->belongsTo(Project::class,'project_id');
     }
 }

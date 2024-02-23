@@ -17,7 +17,6 @@ class GoogleLoginController extends Controller
     public function handleGoogleCallback()
     {
         $user = Socialite::driver('google')->user();
-
         // Đăng nhập hoặc đăng ký người dùng vào hệ thống của bạn dựa trên thông tin $user
         // Chưa có tài khoản thì tạo tài khoản 
         $userExist = User::where('email',$user->email)->first();

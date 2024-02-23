@@ -11,16 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('explorer_permission', function (Blueprint $table) {
+        Schema::create('folder', function (Blueprint $table) {
             $table->increments('id');
+            $table->string('name',100);
+            $table->integer('parent_id');
+            $table->tinyInteger('status')->default(1);
+            $table->unsignedInteger('project_id');
             $table->unsignedInteger('user_id');
-            $table->unsignedInteger('explorer_id');
-            $table->tinyInteger('permission');
             $table->timestamps();
-
-            // //foreign key
-            // $table->foreign('user_id')->references('id')->on('users');
-            // $table->foreign('explorer_id')->references('id')->on('explorer');
         });
     }
 
@@ -29,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('explorer_permission');
+        Schema::dropIfExists('folder');
     }
 };

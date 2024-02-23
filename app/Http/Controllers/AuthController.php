@@ -23,7 +23,7 @@ class AuthController extends Controller
                 'name' => 'required|max:255',
                 'email' => 'email|required',
                 'password' => 'required',
-                'NumberPhone' => 'required'
+                'phone' => 'required'
             ],
             [
                 'name.required' => 'Name must not be empty',
@@ -31,7 +31,7 @@ class AuthController extends Controller
                 'email.required' => 'Email must not be empty',
                 'email.email' => 'Email invalidate',
                 'password.required' => 'Password must not be empty',
-                'NumberPhone.required' => 'Phone number must not be empty',
+                'phone.required' => 'Phone number must not be empty',
             ]
         );
         if ($validator->fails()) {

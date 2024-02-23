@@ -12,22 +12,27 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('export', function (Blueprint $table) {
-            $table->foreign('explorer_id')->references('id')->on('explorer')->onDelete('CASCADE');
+            $table->foreign('files_id')->references('id')->on('files')->onDelete('CASCADE');
         });
-        Schema::table('explorer_permission', function (Blueprint $table) {
+        Schema::table('folder_permis', function (Blueprint $table) {
             $table->foreign('user_id')->references('id')->on('users')->onDelete('CASCADE');
-            $table->foreign('explorer_id')->references('id')->on('explorer')->onDelete('CASCADE');
+            $table->foreign('folder_id')->references('id')->on('folder')->onDelete('CASCADE');
         });
-        Schema::table('explorer', function (Blueprint $table) {
+        Schema::table('folder', function (Blueprint $table) {
             $table->foreign('user_id')->references('id')->on('users')->onDelete('CASCADE');
             $table->foreign('project_id')->references('id')->on('project')->onDelete('CASCADE');
+        });
+        Schema::table('files', function (Blueprint $table) {
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('CASCADE');
+            $table->foreign('project_id')->references('id')->on('project')->onDelete('CASCADE');
+            $table->foreign('folder_id')->references('id')->on('folder')->onDelete('CASCADE');
         });
         Schema::table('tag', function (Blueprint $table) {
             $table->foreign('project_id')->references('id')->on('project')->onDelete('CASCADE');
         });
         Schema::table('todo', function (Blueprint $table) {
             $table->foreign('project_id')->references('id')->on('project')->onDelete('CASCADE');
-            $table->foreign('explorer_id')->references('id')->on('explorer')->onDelete('CASCADE');
+            $table->foreign('files_id')->references('id')->on('files')->onDelete('CASCADE');
         });
         Schema::table('user_project', function (Blueprint $table) {
             $table->foreign('user_id')->references('id')->on('users')->onDelete('CASCADE');

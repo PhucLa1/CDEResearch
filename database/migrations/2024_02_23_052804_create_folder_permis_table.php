@@ -11,16 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('comment', function (Blueprint $table) {
+        Schema::create('folder_permis', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('user_id');
-            $table->integer('another_id');
-            $table->integer('type'); //0: todo, 1: files;
-            $table->text('content');
+            $table->unsignedInteger('folder_id');
+            $table->tinyInteger('permission');
             $table->timestamps();
-
-            // //foreign key
-            // $table->foreign('user_id')->references('id')->on('users');
         });
     }
 
@@ -29,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('comment');
+        Schema::dropIfExists('folder_permis');
     }
 };

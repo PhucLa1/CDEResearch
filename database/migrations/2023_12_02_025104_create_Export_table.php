@@ -15,7 +15,7 @@ return new class extends Migration
             $table->increments('id');
             $table->string('name', 50);
             $table->text('note');
-            $table->unsignedInteger('explorer_id');
+            $table->unsignedInteger('files_id');
             $table->timestamps();
 
             // //foreign key

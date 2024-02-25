@@ -57,7 +57,7 @@ Route::prefix('teams')->group(function () {
 //Project - Đã test
 Route::prefix('project')->group(function () {
     Route::get('/', [ProjectController::class, 'index'])->middleware('auth:api');
-    Route::post('', [ProjectController::class, 'store'])->middleware('auth:api');;
+    Route::post('/', [ProjectController::class, 'store'])->middleware('auth:api');;
     Route::get('/{id}', [ProjectController::class, 'show'])->middleware('auth:api');
     Route::put('/{id}', [ProjectController::class, 'update'])->middleware('auth:api');
     Route::put('/changePermiss/{id}', [ProjectController::class, 'changePermission'])->middleware('auth:api');
@@ -69,4 +69,5 @@ Route::prefix('folder')->group(function () {
     Route::get('/{project_id}/{folder_id}', [FolderController::class, 'listFolderAndFiles'])->middleware('auth:api');
 });
 
+Route::post('upload', [FolderController::class, 'upload']);
 Route::apiResource('todo', ToDoController::class)->middleware('auth:api');

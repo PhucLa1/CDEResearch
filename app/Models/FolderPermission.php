@@ -8,6 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class FolderPermission extends Model
 {
     use HasFactory;
-    protected $table = 'explorer_permissions';
-    protected $fillable = ['user_id','explorer_id','permission'];
+    protected $table = 'folder_permis';
+    protected $fillable = ['user_id','folder_id','permission'];
 }

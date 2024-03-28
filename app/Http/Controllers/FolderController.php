@@ -20,7 +20,7 @@ class FolderController extends Controller
     public function listFolderAndFiles($project_id, $parent_id)
     {
         $folders = Folder::where('project_id', '=', $project_id)
-            ->where('ParentID', '=', $parent_id)
+            ->where('parent_id', '=', $parent_id)
             ->with('user')
             ->get();
         $dataReturn = [
@@ -44,7 +44,7 @@ class FolderController extends Controller
             'name' => [
                 'required',
                 Rule::unique('folder')->where(function ($query) use ($request) {
-                    return $query->where('project_id', $request->project_id)->where('parent_id',$request->parent_id);
+                    return $query->where('project_id', $request->project_id)->where('parent_id', $request->parent_id);
                 })
             ],
             'parent_id' => 'required',
@@ -103,13 +103,13 @@ class FolderController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request,$id)
+    public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
             'name' => [
                 'required',
                 Rule::unique('folder')->where(function ($query) use ($request) {
-                    return $query->where('project_id', $request->project_id)->where('parent_id',$request->parent_id);
+                    return $query->where('project_id', $request->project_id)->where('parent_id', $request->parent_id);
                 })
             ],
             'parent_id' => 'required',
@@ -135,8 +135,8 @@ class FolderController extends Controller
                 'statusCode' => Response::HTTP_NOT_FOUND
             ], Response::HTTP_NOT_FOUND);
         }
-        $folderPermis = FolderPermission::where('project_id','=',$request->project_id)->where('user_id','=',auth()->user()->id)->first()->permission;
-        if(User::returnRole($request->project_id) != 1 || $folderPermis != 1){
+        $folderPermis = FolderPermission::where('folder_id', '=', $id)->where('user_id', '=', auth()->user()->id)->first()->permission;
+        if (User::returnRole($request->project_id) != 1 || $folderPermis != 1) {
             return response([
                 "status" => "error",
                 "message" => 'Không có quyền',
@@ -145,7 +145,7 @@ class FolderController extends Controller
         }
         $dataAdd = $request->all();
         $dataAdd['user_id'] = auth()->user()->id;
-        $folder::update($dataAdd);
+        $folder->update($dataAdd);
         return response()->json([
             'metadata' => $folder,
             'message' => 'Update a record successfully',
@@ -157,17 +157,17 @@ class FolderController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id,$project_id)
+    public function destroy($id, $project_id)
     {
         $folder = Folder::find($id);
-        if(!$folder){
+        if (!$folder) {
             return response([
                 "status" => "error",
                 "message" => 'Record not found',
                 'statusCode' => Response::HTTP_NOT_FOUND
             ], Response::HTTP_NOT_FOUND);
         }
-        if(User::returnRole($project_id)!= 1){
+        if (User::returnRole($project_id) != 1) {
             return response([
                 "status" => "error",
                 "message" => 'Không phải admin nên không có quyền xóa',

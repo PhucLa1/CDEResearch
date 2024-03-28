@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('phone',12)->nullable();
             $table->string('unit',50)->nullable();
             $table->string('expertise',50)->nullable();
-            $table->string('avatar');
+            $table->string('avatar')->nullable();
         });
     }
 

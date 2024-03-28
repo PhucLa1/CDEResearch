@@ -52,16 +52,17 @@ class AuthController extends Controller
         ], Response::HTTP_OK);
     }
 
-    public function Login(Request $request){
-        $validator = Validator::make($request->all(),[
-            'email'=>'required',
-            'password'=>'required'
-        ],[
-            'email.required' =>'Email must not be empty',
-            'password.required' =>'Password must not be empty'
+    public function Login(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required',
+            'password' => 'required'
+        ], [
+            'email.required' => 'Email must not be empty',
+            'password.required' => 'Password must not be empty'
         ]);
 
-        if($validator->fails()){
+        if ($validator->fails()) {
             return response([
                 "status" => "error",
                 "message" => $validator->errors(),
@@ -89,9 +90,10 @@ class AuthController extends Controller
     //     $cookies = Cookie::forget('jwt');
     // }
 
-    public function checkRole($project_id){
+    public function checkRole($project_id)
+    {
         $logUser = auth()->user()->id;
-        $roleInProject = UserProject::where('UserID','=',$logUser)->where('ProjectID','=',$project_id)->first();
+        $roleInProject = UserProject::where('user_id', '=', $logUser)->where('project_id', '=', $project_id)->first();
         return response()->json([
             'metadata' => $roleInProject,
             'message' => 'Login users Successfully',
@@ -99,7 +101,8 @@ class AuthController extends Controller
             'statusCode' => Response::HTTP_OK
         ], Response::HTTP_OK);
     }
-    public function check(){
+    public function check()
+    {
         return auth()->user();
     }
 }

@@ -64,9 +64,12 @@ Route::prefix('project')->group(function () {
     Route::delete('/{id}', [ProjectController::class, 'destroy'])->middleware('auth:api');
 });
 
-//Folder - Đang làm
+//Folder - Đang làm(Da Hoan Thanh)
 Route::prefix('folder')->group(function () {
     Route::get('/{project_id}/{folder_id}', [FolderController::class, 'listFolderAndFiles'])->middleware('auth:api');
+    Route::post('/', [FolderController::class, 'store'])->middleware('auth:api');
+    Route::put('/{id}', [FolderController::class, 'update'])->middleware('auth:api');
+    Route::delete('/{id}/{project_id}', [FolderController::class, 'destroy'])->middleware('auth:api');
 });
 
 Route::post('upload', [FolderController::class, 'upload']);

@@ -22,6 +22,7 @@ return new class extends Migration
             $table->unsignedInteger('user_id');
             $table->string('tag',100)->nullable();
             $table->string('url')->nullable();
+            $table->double('size');
             $table->timestamps();
         });
     }

@@ -66,7 +66,7 @@ Route::prefix('project')->group(function () {
 //Folder - Đang làm(Da Hoan Thanh)
 Route::prefix('folder')->group(function () {
     Route::get('/{project_id}/{folder_id}', [FolderController::class, 'listFolderAndFiles'])->middleware('auth:api');
-    // Route::get('/{project_id}/{folder_id}', [FolderController::class, 'listFolderAndFiles'])->middleware('auth:api');
+    Route::get('/{project_id}/{folder_id}', [FolderController::class, 'listFolderAndFiles'])->middleware('auth:api');
     Route::post('/', [FolderController::class, 'store'])->middleware('auth:api');
     Route::put('/{id}', [FolderController::class, 'update'])->middleware('auth:api');
     Route::delete('/{id}/{project_id}', [FolderController::class, 'destroy'])->middleware('auth:api');
@@ -76,5 +76,6 @@ Route::prefix('folder')->group(function () {
 Route::prefix('files')->group(function () {
     Route::post('/', [FilesController::class, 'store'])->middleware('auth:api');
 });
+
 Route::post('upload', [FolderController::class, 'upload']);
 Route::apiResource('todo', ToDoController::class)->middleware('auth:api');

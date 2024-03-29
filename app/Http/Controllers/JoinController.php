@@ -38,15 +38,13 @@ class JoinController extends Controller
     public function SendEmail(Request $request){
         $validator = Validator::make($request->all(),[
             'project_id' => 'required',
-            'user_id' => ['required',        
-                        Rule::unique('user_project')->where(function ($query) use ($request) {
-                            return $query->where('project_id', $request->project_id);
-                        })],
+            'email' => ['required'],
             'role' => 'required',
-            
+
         ],[
             'project_id.required' => 'Id của project không được để trống ',
             'user_id.required' => 'Id của user không được để trống',
+            'email.required' => 'Bặt buộc phải điền trường email',
             'user_id.unique' => 'Cặp ProjectID và UserID đã tồn tại',
             'role.required' => 'Role của người dùng trong dự án đó phải được chọn'
         ]);
@@ -55,7 +53,17 @@ class JoinController extends Controller
                 "status" => "error",
                 "message" => $validator->errors(),
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
-            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+        //Check id của email
+        $user_id = User::where('email',$request->email)->first()->id;
+        $checkUserUnique = UserProject::where('user_id',$user_id)->where('project_id',$request->project_id)->first();
+        if(!$checkUserUnique){
+            return response([
+                "status" => "error",
+                "message" => 'User đã tồn tại trong dự án rồi',
+                'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         $project_id = $request->project_id;
         $project = Project::find($project_id);
@@ -66,14 +74,14 @@ class JoinController extends Controller
                 "status" => "error",
                 "message" => 'Bạn không phải admin dự án và dự án không cấp phép cho bạn mời người ngoài',
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
-            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         $userAddPendingInvite = UserProject::create($request->all());
         //Send Email
         $logUser = auth()->user()->id;
         $userIds = [$logUser, $request->user_id];
         $users = User::findMany($userIds);
-        
+
         $dataReturn = [
             'userSend' => $users->firstWhere('id', $logUser),
             'userReceive' => $users->firstWhere('id', $request->user_id),
@@ -85,7 +93,7 @@ class JoinController extends Controller
             "status" => "success",
             "message" => 'Gửi mail thành công cho người cần mời',
             'statusCode' => Response::HTTP_OK
-        ], Response::HTTP_OK); 
+        ], Response::HTTP_OK);
     }
 
     public function AcceptRequest($project_id,$user_id){
@@ -100,7 +108,7 @@ class JoinController extends Controller
                 "status" => "error",
                 "message" => 'Bạn không phải admin dự án nên không cho thay đổi role',
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
-            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         //phải có ít nhất một admin
         $roleAdminCount = UserProject::where('project_id',$project_id)->where('status',1)->where('role',1)->count();
@@ -109,7 +117,7 @@ class JoinController extends Controller
                 "status" => "error",
                 "message" => 'Có mỗi ông là admin mà ông lại chuyển về user, dự án phải có ít nhất 1 admin',
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
-            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         $userProject = UserProject::where('project_id',$project_id)->where('user_id',$user_id)->update(['role' => $role]);
 
@@ -129,7 +137,7 @@ class JoinController extends Controller
                 "status" => "error",
                 "message" => 'Bạn không phải admin dự án nên không cho xóa người ra khỏi dự án',
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
-            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         $userProject->delete();
         return response()->json([

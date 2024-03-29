@@ -28,7 +28,7 @@ class TagCast implements CastsAttributes
      */
     public function set(Model $model, string $key, mixed $value, array $attributes): mixed
     {
-        $string = implode(',', $value);
-        return $string;
+        // $string = implode(',', $value);
+        return $value;
     }
 }

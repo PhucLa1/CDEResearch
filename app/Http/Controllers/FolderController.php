@@ -57,10 +57,10 @@ class FolderController extends Controller
                 'status' => 'success',
                 'statusCode' => Response::HTTP_OK
             ], Response::HTTP_OK);
-        }else{ //Se lay parent ID la 0 truoc
+        }else{
             $folderCanMove = Folder::where('project_id', '=', $project_id)
             ->where('parent_id', '=', $parent_id)
-            ->where('id','=',$folder_id)
+            ->where('id','!=',$folder_id)
             ->get();
             return response()->json([
                 'metadata' => $folderCanMove,
@@ -135,6 +135,22 @@ class FolderController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
+    public function show($id){
+        $folder = Folder::findOrFail($id);
+        if (!$folder) {
+            return response([
+                "status" => "error",
+                "message" => 'Không tìm thấy bản ghi',
+                'statusCode' => Response::HTTP_NOT_FOUND
+            ], Response::HTTP_NOT_FOUND);
+        }
+        return response()->json([
+            'metadata' => $folder,
+            'message' => 'Update a record successfully',
+            'status' => 'success',
+            'statusCode' => Response::HTTP_OK
+        ], Response::HTTP_OK);
+    }
 
 
     /**
@@ -144,7 +160,6 @@ class FolderController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => [
-                'required',
                 Rule::unique('folder')->where(function ($query) use ($request) {
                     return $query->where('project_id', $request->project_id)->where('parent_id',$request->parent_id);
                 })
@@ -153,7 +168,6 @@ class FolderController extends Controller
             'project_id' => 'required',
         ], [
             'name.unique' => 'Tên folder đã bị trùng trong một dự án',
-            'name.required' => 'Không được để trống tên của folder',
             'parent_id.required' => 'Không được để trống ID của folder cha',
             'project_id.required' => 'Không được để trống id của project',
         ]);
@@ -172,7 +186,7 @@ class FolderController extends Controller
                 'statusCode' => Response::HTTP_NOT_FOUND
             ], Response::HTTP_NOT_FOUND);
         }
-        $folderPermis = FolderPermission::where('project_id','=',$request->project_id)->where('user_id','=',auth()->user()->id)->first()->permission;
+        $folderPermis = FolderPermission::where('folder_id','=',$folder->id)->where('user_id','=',auth()->user()->id)->first()->permission;
         if(User::returnRole($request->project_id) != 1 || $folderPermis != 1){
             return response([
                 "status" => "error",
@@ -182,7 +196,7 @@ class FolderController extends Controller
         }
         $dataAdd = $request->all();
         $dataAdd['user_id'] = auth()->user()->id;
-        $folder::update($dataAdd);
+        $folder->update($dataAdd);
         return response()->json([
             'metadata' => $folder,
             'message' => 'Update a record successfully',

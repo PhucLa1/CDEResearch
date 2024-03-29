@@ -12,8 +12,11 @@ class Folder extends Model
     use HasFactory;
     protected $table = 'folder';
     protected $fillable = [
-        'name', 'parent_id', 
-        'project_id','user_id'
+        'name', 'parent_id',
+        'project_id','user_id','tag'
+    ];
+    protected $casts = [
+        'tag' => TagCast::class,
     ];
 
 

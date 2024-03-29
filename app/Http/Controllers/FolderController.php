@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\UserProject;
 use Illuminate\Validation\Rule;
 use App\Models\Folder;
+use App\Models\Files;
 use App\Models\FolderPermission;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
@@ -19,21 +20,57 @@ class FolderController extends Controller
      */
     public function listFolderAndFiles($project_id, $parent_id)
     {
+        //parent id là id của folder được chọn, nếu là lớn nhất thì parent id là 0
         $folders = Folder::where('project_id', '=', $project_id)
             ->where('parent_id', '=', $parent_id)
             ->with('user')
             ->get();
+        $files = Files::where('project_id', '=', $project_id)
+            ->where('folder_id', '=', $parent_id)
+            ->where('status', '=', 1)
+            ->with('user')
+            ->get();
         $dataReturn = [
-            'folders' => $folders
+            'folders' => $folders,
+            'files' => $files
         ];
         return response()->json([
             'metadata' => $dataReturn,
-            'message' => 'Get all records from Folder',
+            'message' => 'Get all records from Folder,Files',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK
         ], Response::HTTP_OK);
     }
 
+    public function listFolderCanMove(Request $request)
+    {
+        $type = $request->type;
+        $parent_id = $request->parent_id;
+        $project_id = $request->project_id;
+        $folder_id = $request->folder_id;
+        if ($type == 'files') {
+            $folderCanMove = Folder::where('project_id', '=', $project_id)
+                ->where('parent_id', '=', $parent_id)
+                ->get();
+            return response()->json([
+                'metadata' => $folderCanMove,
+                'message' => 'Get all records from Folder',
+                'status' => 'success',
+                'statusCode' => Response::HTTP_OK
+            ], Response::HTTP_OK);
+        } else { //Se lay parent ID la 0 truoc
+            $folderCanMove = Folder::where('project_id', '=', $project_id)
+                ->where('parent_id', '=', $parent_id)
+                ->where('id', '=', $folder_id)
+                ->get();
+            return response()->json([
+                'metadata' => $folderCanMove,
+                'message' => 'Get all records from Folder',
+                'status' => 'success',
+                'statusCode' => Response::HTTP_OK
+            ], Response::HTTP_OK);
+        }
+    }
 
     /**
      * Store a newly created resource in storage.

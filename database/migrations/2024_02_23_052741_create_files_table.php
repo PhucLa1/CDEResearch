@@ -13,15 +13,16 @@ return new class extends Migration
     {
         Schema::create('files', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name',100);
+            $table->text('name');
             $table->tinyInteger('versions');
             $table->string('note')->nullable();
             $table->unsignedInteger('folder_id');
             $table->tinyInteger('status')->default(1);
             $table->unsignedInteger('project_id');
             $table->unsignedInteger('user_id');
-            $table->string('tag',100)->nullable();
+            $table->string('tag', 100)->nullable();
             $table->string('url')->nullable();
+            $table->double('size');
             $table->timestamps();
         });
     }

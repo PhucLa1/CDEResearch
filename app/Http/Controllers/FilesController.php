@@ -21,10 +21,6 @@ class FilesController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -87,11 +83,28 @@ class FilesController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    //Lấy hết thông tin của 1 file ra
+    public function show($id)
     {
-        //
+        $file = Files::findOrFail($id);
+        if(!$file){
+            return response([
+                "status" => "error",
+                "message" => 'Không tìm thấy file đó đâu',
+                'statusCode' => Response::HTTP_NOT_FOUND
+            ], Response::HTTP_NOT_FOUND);
+        }
+        return response()->json([
+            'metadata' => $file,
+            'message' => 'Create a record successfully',
+            'status' => 'success',
+            'statusCode' => Response::HTTP_OK
+        ], Response::HTTP_OK);
     }
 
+    public function historyOfFiles($id){
+
+    }
     /**
      * Show the form for editing the specified resource.
      */

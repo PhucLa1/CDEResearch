@@ -24,8 +24,8 @@ class JoinController extends Controller
             ->with('project')
             ->get()
             ->map(function ($team) {
-                $team->role = ($team->Role = 1) ? 'Admin' : 'User';
-                $team->status = ($team->Status = 1) ? 'Active' : 'Pending Invite';
+                $team->role = ($team->role == 1) ? 'Admin' : 'User';
+                $team->status = ($team->status == 1) ? 'Active' : 'Pending Invite';
                 return $team;
             });
         return response()->json([
@@ -39,15 +39,13 @@ class JoinController extends Controller
     public function SendEmail(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'project_id' => 'required',
+            'project_id' => ['required'],
             'email' => ['required'],
-            'role' => 'required',
+            'role' => ['required'],
 
         ], [
             'project_id.required' => 'Id của project không được để trống ',
-            'user_id.required' => 'Id của user không được để trống',
             'email.required' => 'Bặt buộc phải điền trường email',
-            'user_id.unique' => 'Cặp ProjectID và UserID đã tồn tại',
             'role.required' => 'Role của người dùng trong dự án đó phải được chọn'
         ]);
         if ($validator->fails()) {
@@ -58,8 +56,17 @@ class JoinController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         //Check id của email
-        $user_id = User::where('email', $request->email)->first()->id;
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return response([
+                "status" => "error",
+                "message" => 'Chưa có email này',
+                'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+        $user_id = $user->id;
         $checkUserUnique = UserProject::where('user_id', $user_id)->where('project_id', $request->project_id)->first();
+
         if ($checkUserUnique) {
             return response([
                 "status" => "error",
@@ -78,15 +85,18 @@ class JoinController extends Controller
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-        $userAddPendingInvite = UserProject::create($request->all());
+        $dataAdd['user_id'] = $user_id;
+        $dataAdd['project_id'] = $request->project_id;
+        $dataAdd['role'] = $request->role;
+        $userAddPendingInvite = UserProject::create($dataAdd);
         //Send Email
         $logUser = auth()->user()->id;
-        $userIds = [$logUser, $request->user_id];
+        $userIds = [$logUser, $user_id];
         $users = User::findMany($userIds);
 
         $dataReturn = [
             'userSend' => $users->firstWhere('id', $logUser),
-            'userReceive' => $users->firstWhere('id', $request->user_id),
+            'userReceive' => $users->firstWhere('id', $user_id),
             'project' => Project::find($request->project_id)
         ];
         Mail::to($dataReturn['userReceive']->email)->send(new RequestMail($dataReturn));

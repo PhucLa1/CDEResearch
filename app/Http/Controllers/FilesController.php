@@ -41,7 +41,7 @@ class FilesController extends Controller
         }
         //Lấy các thuộc tính của file
         $name = $file->getClientOriginalName();
-        $size = $file->getClientSize();
+        $size = $file->getSize();
         $user_id = auth()->user()->id;
         $validator = Validator::make($request->all(), [
             'folder_id' => 'required',

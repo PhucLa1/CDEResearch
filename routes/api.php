@@ -9,7 +9,7 @@ use App\Http\Controllers\JoinController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\ToDoController;
-
+use App\Http\Controllers\FilesController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -67,9 +67,15 @@ Route::prefix('project')->group(function () {
 //Folder - Đang làm(Da Hoan Thanh)
 Route::prefix('folder')->group(function () {
     Route::get('/{project_id}/{folder_id}', [FolderController::class, 'listFolderAndFiles'])->middleware('auth:api');
+    Route::get('/{project_id}/{folder_id}', [FolderController::class, 'listFolderAndFiles'])->middleware('auth:api');
     Route::post('/', [FolderController::class, 'store'])->middleware('auth:api');
     Route::put('/{id}', [FolderController::class, 'update'])->middleware('auth:api');
     Route::delete('/{id}/{project_id}', [FolderController::class, 'destroy'])->middleware('auth:api');
+});
+
+//Files - Đang làm
+Route::prefix('files')->group(function () {
+    Route::post('/', [FilesController::class, 'store'])->middleware('auth:api');
 });
 
 Route::post('upload', [FolderController::class, 'upload']);

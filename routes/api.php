@@ -77,6 +77,9 @@ Route::prefix('folder')->group(function () {
 //Files - Đang làm
 Route::prefix('files')->group(function () {
     Route::post('/', [FilesController::class, 'store'])->middleware('auth:api');
+    Route::get('/history/{first_version}', [FilesController::class, 'historyOfFiles'])->middleware('auth:api');
+    Route::get('/dowload/{id}', [FilesController::class, 'dowload'])->middleware('auth:api');
+    Route::delete('/{id}', [FilesController::class, 'destroy'])->middleware('auth:api');
 });
 
 Route::post('upload', [FolderController::class, 'upload']);

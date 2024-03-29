@@ -43,10 +43,10 @@ class FolderController extends Controller
     }
 
     public function listFolderCanMove(Request $request){
-        $type = $request->type;
-        $parent_id = $request->parent_id;
-        $project_id = $request->project_id;
-        $folder_id = $request->folder_id;
+        $type = $request->type; //folder hoặc files
+        $parent_id = $request->parent_id; //0,
+        $project_id = $request->project_id; //
+        $folder_id = $request->folder_id; //folder_id là cái folder đang di chuyển
         if($type == 'files'){
             $folderCanMove = Folder::where('project_id', '=', $project_id)
             ->where('parent_id', '=', $parent_id)

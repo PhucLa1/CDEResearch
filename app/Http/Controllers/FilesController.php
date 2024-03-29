@@ -57,10 +57,12 @@ class FilesController extends Controller
         //Get versions last
         $version = Files::where('status', '=', 1)
             ->where('name', '=', $name)->orderBy('created_at', 'desc')->first();
+
         $canUpdate = false;
         if ($version) { //exsists
             $first_version = $version->first_version;
             $versions = $version->versions + 1;
+            $version->update(['status' => 0]);
         } else { //not exists
             $canUpdate = true; //Mình sẽ cho tạm version đầu là 0, rồi về sau update
             $first_version = 0;
@@ -119,19 +121,42 @@ class FilesController extends Controller
         ], Response::HTTP_OK);
     }
 
-    public function historyOfFiles($id)
+    public function historyOfFiles($first_version)
     {
+        $historyFiles = Files::where('first_version', $first_version)
+            ->get();
+        return response()->json([
+            'metadata' => $historyFiles,
+            'message' => 'Lấy ra các files cũ thành công',
+            'status' => 'success',
+            'statusCode' => Response::HTTP_OK
+        ], Response::HTTP_OK);
     }
     public function dowload($id)
     {
+        $file = Files::findOrFail($id);
+        if (!$file) {
+            return response([
+                "status" => "error",
+                "message" => 'Không tìm thấy file đó đâu',
+                'statusCode' => Response::HTTP_NOT_FOUND
+            ], Response::HTTP_NOT_FOUND);
+        }
+        $url = $file->url;
+        $fileContent = Storage::disk('google')->get($url);
+        $downloadsFolder = rtrim(shell_exec('echo %USERPROFILE%\Downloads'));
+        $localFilePath = $downloadsFolder . '/' . $url;
+        file_put_contents($localFilePath, $fileContent);
+        return response()->json([
+            'metadata' => $file,
+            'message' => 'Tải xuống thành công',
+            'status' => 'success',
+            'statusCode' => Response::HTTP_OK
+        ], Response::HTTP_OK);
     }
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
@@ -154,13 +179,16 @@ class FilesController extends Controller
                 'statusCode' => Response::HTTP_NOT_FOUND
             ], Response::HTTP_NOT_FOUND);
         }
+        if($file->status == 1){
+            $deletedFile = Files::where('first_version', $file->first_version)->delete();
+        }
         //GIảm version đi 1
         $effectedFile = Files::where('first_version', $file->first_version)->update(['versions' => DB::raw('versions - 1')]);
         //Lấy thằng files cũ nhất mà có cùng version cha
         $first_version = $file->first_version;
         $file->delete();
         $firstVersion = Files::where('first_version', $first_version)->first();
-        if(!$firstVersion){
+        if (!$firstVersion) {
             return response([
                 "status" => "error",
                 "message" => 'Không tìm thấy file đó đâu',

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\UserProject;
 use App\Models\User;
+use App\Models\Activities;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -57,7 +58,7 @@ class ProjectController extends Controller
         if ($request->thumbnails != null) {
             $imageName = time() . '.' . $request->thumbnails->extension();
             $request->thumbnails->move(public_path('Upload'), $imageName);
-            
+
         }
 
         if ($validator->fails()) {
@@ -78,6 +79,7 @@ class ProjectController extends Controller
             'status' => 1
         ];
         $userProject = UserProject::create($userProjectAdd);
+        Activities::addActivity('project','đã tạo mới dự án',auth()->user()->id,$project->id);
         return response()->json([
             'metadata' => $project,
             'message' => 'Thêm mới 1 dự án thành công',
@@ -115,7 +117,7 @@ class ProjectController extends Controller
      */
     public function update(Request $request, $id)
     {
-        
+
         $project = Project::findOrFail($id);
         $imageName = $project->thumbnails;
         if (User::returnRole($id) == 0) {
@@ -157,13 +159,14 @@ class ProjectController extends Controller
 
         //Nếu có sắn ảnh rồi thì xóa ảnh đó đi
         if ($project->thumbnails != null) {
-            //Xóa ảnh 
+            //Xóa ảnh
             $imagePath = public_path('Upload/' . $project->thumbnails);
             File::delete($imagePath);
         }
         $data= $request->all();
         $data['thumbnails'] = $imageName;
         $project->update($data);
+        Activities::addActivity('project','đã chỉnh sửa thông tin dự án',auth()->user()->id,$project->id);
         return response()->json([
             'metadata' => $project,
             'message' => 'Sửa dự án thành công',
@@ -196,6 +199,7 @@ class ProjectController extends Controller
             ], Response::HTTP_FORBIDDEN);
         }
         $project->update($request->all());
+        Activities::addActivity('project','đã thay đổi quyền của của người dùng trong dự án',auth()->user()->id,$project->id);
         return response()->json([
             'message' => 'Chuyển đổi thành công',
             'status' => 'success',
@@ -225,7 +229,7 @@ class ProjectController extends Controller
         }
         //Nếu có sắn ảnh rồi thì xóa ảnh đó đi
         if ($project->thumbnails != null) {
-            //Xóa ảnh 
+            //Xóa ảnh
             $imagePath = public_path('Upload/' . $project->thumbnails);
             File::delete($imagePath);
         }

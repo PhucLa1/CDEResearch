@@ -12,6 +12,7 @@ use App\Models\Files;
 use App\Models\FolderPermission;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 
 class FolderController extends Controller
 {
@@ -125,12 +126,28 @@ class FolderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function upload(Request $request)
-    {
-        $file = $request->file('file');
-        Storage::disk('google')->put('uploads/' . $file->getClientOriginalName(), file_get_contents($file));
-        return 'File was saved to Google Drive';
-    }
+    // public function upload(Request $request)
+    // {
+    //     $file = $request->file('file');
+
+    //     // Lưu tệp gốc vào ổ đĩa google
+    //     Storage::disk('google')->put('uploads/' . $file->getClientOriginalName(), file_get_contents($file));
+
+    //     // Tạo đường dẫn đến tệp gốc trên ổ đĩa google
+    //     $googleFilePath = 'uploads/' . $file->getClientOriginalName();
+
+    //     // Tạo thumbnail
+    //     $thumbnail = Image::make(Storage::disk('google')->get($googleFilePath))->fit(150, 150);
+
+    //     // Lưu thumbnail vào ổ đĩa
+    //     $thumbnailPath = 'thumbnails/' . $file->getClientOriginalName();
+    //     Storage::disk('public')->put($thumbnailPath, (string) $thumbnail->encode());
+
+    //     // Trả về đường dẫn đến thumbnail
+    //     $thumbnailUrl = Storage::disk('public')->url($thumbnailPath);
+
+    //     return response()->json(['thumbnail_url' => $thumbnailUrl]);
+    // }
 
     /**
      * Show the form for editing the specified resource.

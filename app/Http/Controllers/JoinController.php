@@ -111,7 +111,8 @@ class JoinController extends Controller
     public function AcceptRequest($project_id, $user_id)
     {
         $userProject = UserProject::where('project_id', $project_id)->where('user_id', $user_id)->update(['status' => 1]);
-        return Redirect::away('https://www.youtube.com/watch?v=mnjaCqz-Qi8');
+        return Redirect::away('https://www.youtube.com/watch?v=mnjaCqz-Qi8'); // a return về đường link về trang web nhé
+        
     }
 
     public function updateRole($project_id, $user_id, $role)

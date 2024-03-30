@@ -13,7 +13,7 @@ class Files extends Model
         'name', 'versions',
         'note', 'folder_id',
         'project_id','user_id',
-        'tag','url','size'
+        'tag','url','size','first_version'
     ];
     public function user()
     {

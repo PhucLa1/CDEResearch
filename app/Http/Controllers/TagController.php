@@ -62,7 +62,7 @@ class TagController extends Controller
                 "status" => "error",
                 "message" => $validator->errors(),
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
-            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         $tag = Tag::create($request->all());
         return response()->json([
@@ -70,7 +70,7 @@ class TagController extends Controller
             'message' => 'Create a record successfully',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK
-        ], Response::HTTP_OK); 
+        ], Response::HTTP_OK);
     }
 
     /**
@@ -85,7 +85,7 @@ class TagController extends Controller
                 "status" => "error",
                 "message" => 'Record not found',
                 'statusCode' => Response::HTTP_NOT_FOUND
-            ], Response::HTTP_NOT_FOUND); 
+            ], Response::HTTP_NOT_FOUND);
         }
         return response()->json([
             'metadata' => $tag,
@@ -106,8 +106,9 @@ class TagController extends Controller
             'name'=>[
                 'required',
                 'max:255',
-                Rule::unique('tag')->where(function ($query) use ($request) {
-                    return $query->where('project_id', $request->project_id);
+                Rule::unique('tag')->where(function ($query) use ($request,$id) {
+                    return $query->where('project_id', $request->project_id)
+                    ->where('id','!=',$id);
                 }),
             ],
         ],[
@@ -120,14 +121,14 @@ class TagController extends Controller
                 "status" => "error",
                 "message" => 'Không phải admin nên không có quyền sửa',
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
-            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         if($validator->fails()){
             return response([
                 "status" => "error",
                 "message" => $validator->errors(),
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
-            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         $tag = Tag::find($id);
         if(!$tag){
@@ -135,7 +136,7 @@ class TagController extends Controller
                 "status" => "error",
                 "message" => 'Record not found',
                 'statusCode' => Response::HTTP_NOT_FOUND
-            ], Response::HTTP_NOT_FOUND); 
+            ], Response::HTTP_NOT_FOUND);
         }
         $tag->update($request->all());
         return response()->json([
@@ -157,14 +158,14 @@ class TagController extends Controller
                 "status" => "error",
                 "message" => 'Record not found',
                 'statusCode' => Response::HTTP_NOT_FOUND
-            ], Response::HTTP_NOT_FOUND); 
+            ], Response::HTTP_NOT_FOUND);
         }
         if(User::returnRole($project_id) != 1){
             return response([
                 "status" => "error",
                 "message" => 'Không phải admin nên không có quyền xóa',
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
-            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         $tag->delete();
         return response()->json([
@@ -179,7 +180,7 @@ class TagController extends Controller
                 "status" => "error",
                 "message" => 'Không phải admin nên không có quyền xóa tất cả bản ghi',
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
-            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         $tagRemove = Tag::where('project_id',$project_id)->delete();
         return response()->json([

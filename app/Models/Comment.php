@@ -13,4 +13,5 @@ class Comment extends Model
         'user_id', 'another_id',
         'type', 'content'
     ];
+    //type là 0: folder, 1:file, 2 : todo
 }

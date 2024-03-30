@@ -160,13 +160,17 @@ class FolderController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => [
-                Rule::unique('folder')->where(function ($query) use ($request) {
-                    return $query->where('project_id', $request->project_id)->where('parent_id',$request->parent_id);
+                'required',
+                Rule::unique('folder')->where(function ($query) use ($request,$id) {
+                    return $query->where('project_id', $request->project_id)
+                    ->where('parent_id',$request->parent_id)
+                    ->where('id','!=',$id);
                 })
             ],
             'parent_id' => 'required',
             'project_id' => 'required',
         ], [
+            'name.required' => 'Tên folder không được để trống',
             'name.unique' => 'Tên folder đã bị trùng trong một dự án',
             'parent_id.required' => 'Không được để trống ID của folder cha',
             'project_id.required' => 'Không được để trống id của project',

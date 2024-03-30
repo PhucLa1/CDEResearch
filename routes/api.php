@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\GoogleLoginController;
 use App\Http\Controllers\JoinController;
@@ -74,12 +75,23 @@ Route::prefix('folder')->group(function () {
     Route::delete('/{id}/{project_id}', [FolderController::class, 'destroy'])->middleware('auth:api');
 });
 
-//Files - Đang làm
+//Files - Đang làm(Đã hoàn thành)
 Route::prefix('files')->group(function () {
     Route::post('/', [FilesController::class, 'store'])->middleware('auth:api');
     Route::get('/history/{first_version}', [FilesController::class, 'historyOfFiles'])->middleware('auth:api');
     Route::get('/dowload/{id}', [FilesController::class, 'dowload'])->middleware('auth:api');
-    Route::delete('/{id}', [FilesController::class, 'destroy'])->middleware('auth:api');
+    Route::put('/{id}', [FilesController::class, 'update'])->middleware('auth:api');
+    Route::delete('/{id}/{project_id}', [FilesController::class, 'deleteByPermis'])->middleware('auth:api');
+    Route::get('/{id}', [FilesController::class, 'show'])->middleware('auth:api');
+});
+
+//Comment - Đang làm(Đã hoàn thành)
+Route::prefix('comment')->group(function () {
+    Route::get('/{type}/{another_id}', [CommentController::class, 'index'])->middleware('auth:api');
+    Route::post('/', [CommentController::class, 'store'])->middleware('auth:api');
+    Route::put('/{id}/{project_id}', [CommentController::class, 'update'])->middleware('auth:api');
+    Route::delete('/{id}/{project_id}', [CommentController::class, 'destroy'])->middleware('auth:api');
+    Route::get('/{id}', [CommentController::class, 'show'])->middleware('auth:api');
 });
 
 Route::post('upload', [FolderController::class, 'upload']);

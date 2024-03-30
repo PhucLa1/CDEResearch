@@ -101,6 +101,8 @@ class JoinController extends Controller
         ];
         Mail::to($dataReturn['userReceive']->email)->send(new RequestMail($dataReturn));
 
+        //Thêm vào activity
+
         return response([
             "status" => "success",
             "message" => 'Gửi mail thành công cho người cần mời',

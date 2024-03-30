@@ -95,4 +95,11 @@ Route::prefix('comment')->group(function () {
 });
 
 Route::post('upload', [FolderController::class, 'upload']);
-Route::apiResource('todo', ToDoController::class)->middleware('auth:api');
+//Todo - Đang làm(Đã hoàn thành)
+Route::prefix('todo')->group(function () {
+    Route::get('/{project_id}/{todo_permission}', [ToDoController::class, 'index'])->middleware('auth:api');
+    Route::post('/', [ToDoController::class, 'store'])->middleware('auth:api');
+    Route::put('/{id}/{project_id}', [ToDoController::class, 'update'])->middleware('auth:api');
+    Route::delete('/{id}/{project_id}', [ToDoController::class, 'destroy'])->middleware('auth:api');
+    Route::get('/{id}', [ToDoController::class, 'show'])->middleware('auth:api');
+});

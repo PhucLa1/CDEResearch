@@ -14,4 +14,8 @@ class Comment extends Model
         'type', 'content'
     ];
     //type là 0: folder, 1:file, 2 : todo
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

@@ -79,7 +79,8 @@ class ProjectController extends Controller
             'status' => 1
         ];
         $userProject = UserProject::create($userProjectAdd);
-        Activities::addActivity('project','đã tạo mới dự án',auth()->user()->id,$project->id);
+        //Thêm activity
+        Activities::addActivity('Dự án',"đã tạo mới dự án {$request->name}",auth()->user()->id,$project->id);
         return response()->json([
             'metadata' => $project,
             'message' => 'Thêm mới 1 dự án thành công',
@@ -166,7 +167,8 @@ class ProjectController extends Controller
         $data= $request->all();
         $data['thumbnails'] = $imageName;
         $project->update($data);
-        Activities::addActivity('project','đã chỉnh sửa thông tin dự án',auth()->user()->id,$project->id);
+        //Thêm activities
+        Activities::addActivity('Dự án','đã chỉnh sửa thông tin dự án',auth()->user()->id,$project->id);
         return response()->json([
             'metadata' => $project,
             'message' => 'Sửa dự án thành công',
@@ -199,7 +201,9 @@ class ProjectController extends Controller
             ], Response::HTTP_FORBIDDEN);
         }
         $project->update($request->all());
-        Activities::addActivity('project','đã thay đổi quyền của của người dùng trong dự án',auth()->user()->id,$project->id);
+
+        //Thêm activities
+        Activities::addActivity('Dự án','đã thay đổi quyền của của người dùng trong dự án',auth()->user()->id,$project->id);
         return response()->json([
             'message' => 'Chuyển đổi thành công',
             'status' => 'success',

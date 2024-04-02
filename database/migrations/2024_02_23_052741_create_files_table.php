@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('tag',100)->nullable();
             $table->string('url')->nullable();
             $table->double('size');
-            $table->tinyInteger('first_version');
+            $table->integer('first_version');
             $table->timestamps();
         });
     }

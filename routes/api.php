@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivitiesController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -11,6 +12,8 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\ToDoController;
 use App\Http\Controllers\FilesController;
+use App\Models\Activities;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -94,7 +97,7 @@ Route::prefix('comment')->group(function () {
     Route::get('/{id}', [CommentController::class, 'show'])->middleware('auth:api');
 });
 
-Route::post('upload', [FolderController::class, 'upload']);
+
 //Todo - Đang làm(Đã hoàn thành)
 Route::prefix('todo')->group(function () {
     Route::get('/{project_id}/{todo_permission}', [ToDoController::class, 'index'])->middleware('auth:api');
@@ -102,4 +105,11 @@ Route::prefix('todo')->group(function () {
     Route::put('/{id}/{project_id}', [ToDoController::class, 'update'])->middleware('auth:api');
     Route::delete('/{id}/{project_id}', [ToDoController::class, 'destroy'])->middleware('auth:api');
     Route::get('/{id}', [ToDoController::class, 'show'])->middleware('auth:api');
+});
+
+//Activities - Đang làm(Đã hoàn thành)
+Route::prefix('activities')->group(function () {
+    Route::get('/', [ActivitiesController::class, 'index'])->middleware('auth:api');
+    Route::get('/{project_id}', [ActivitiesController::class, 'listAllUserInProject'])->middleware('auth:api');
+
 });

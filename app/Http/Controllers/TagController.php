@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Activities;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
@@ -65,6 +66,9 @@ class TagController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         $tag = Tag::create($request->all());
+
+        //Thêm mới activities
+        Activities::addActivity('Tag','đã thêm mới một tag',auth()->user()->id,$request->project_id);
         return response()->json([
             'metadata' => $tag,
             'message' => 'Create a record successfully',
@@ -139,6 +143,7 @@ class TagController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
         $tag->update($request->all());
+        Activities::addActivity('Tag',"đã chỉnh sửa tag {$tag->name}",auth()->user()->id,$request->project_id);
         return response()->json([
             'metadata' => $tag,
             'message' => 'Update a record successfully',
@@ -167,7 +172,9 @@ class TagController extends Controller
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+        $name = $tag->name;
         $tag->delete();
+        Activities::addActivity('Tag',"đã xóa tag {$name}",auth()->user()->id,$project_id);
         return response()->json([
             'message' => 'Delete One Record Successfully',
             'status' => 'success',
@@ -183,12 +190,11 @@ class TagController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         $tagRemove = Tag::where('project_id',$project_id)->delete();
+        Activities::addActivity('Tag',"đã xóa toàn bộ tag trong dự án",auth()->user()->id,$project_id);
         return response()->json([
             'message' => 'Delete All Record Successfully',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK
         ], Response::HTTP_OK);
     }
-
-
 }

@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use Mail;
 use App\Mail\RequestMail;
+use App\Models\Activities as ModelsActivities;
 use Illuminate\Validation\Rule;
 use App\Models\UserProject;
 use App\Models\User;
 use App\Models\Project;
+use App\Models\Activities;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
@@ -102,7 +104,9 @@ class JoinController extends Controller
         Mail::to($dataReturn['userReceive']->email)->send(new RequestMail($dataReturn));
 
         //Thêm vào activity
-
+        $name = $dataReturn['userReceive']->name;
+        $roleInProject = $request->role == 1 ? 'Admin' : 'Users';
+        Activities::addActivity('Teams',"đã mời {$name} với vai trò {$roleInProject} vào dự án",auth()->user()->id,$project_id);
         return response([
             "status" => "success",
             "message" => 'Gửi mail thành công cho người cần mời',
@@ -136,7 +140,9 @@ class JoinController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         $userProject = UserProject::where('project_id', $project_id)->where('user_id', $user_id)->update(['role' => $role]);
-
+        $presentRole = User::find($user_id)->role == 1 ? 'Admin' : 'User';
+        $updateRole = $role == 1 ? 'Admin' : 'User';
+        Activities::addActivity('Teams',"đã thay đổi role của  {$presentRole} sang {$updateRole}",auth()->user()->id,$project_id);
         return response()->json([
             'message' => 'Chuyển role thành công',
             'status' => 'success',
@@ -147,7 +153,7 @@ class JoinController extends Controller
     public function destroy($project_id, $user_id)
     {
         $logUser = auth()->user()->id;
-        $userProject = UserProject::where('project_id', $project_id)->where('user_id', $user_id)->first();
+        $userProject = UserProject::where('project_id', $project_id)->where('user_id', $user_id)->with('user')->first();
         if (User::returnRole($project_id) == 0 && $logUser != $userProject->user_id) {
             //Không phải admin và người xóa không phải là chính mình
             return response([
@@ -157,6 +163,7 @@ class JoinController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         $userProject->delete();
+        Activities::addActivity('Teams',"đã xóa người dùng {$userProject->user->name} ra khỏi dự án",auth()->user()->id,$project_id);
         return response()->json([
             'metadata' => $userProject,
             'message' => 'Xóa người dùng thành công',

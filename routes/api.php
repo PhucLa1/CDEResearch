@@ -40,6 +40,7 @@ Route::get('check', [AuthController::class, 'check'])->middleware('auth:api');
 
 //CRUD
 //Tag - đã test
+// Activity - Done
 Route::prefix('tag')->group(function () {
     Route::get('showAll/{project_id}', [TagController::class, 'index'])->middleware('auth:api');
     Route::get('/{id}', [TagController::class, 'show'])->middleware('auth:api');
@@ -50,6 +51,7 @@ Route::prefix('tag')->group(function () {
 });
 
 //Teams join - Đẫ test
+//Activity - Done
 Route::prefix('teams')->group(function () {
     Route::get('/{project_id}', [JoinController::class, 'index'])->middleware('auth:api');
     Route::get('join/{project_id}/{user_id}', [JoinController::class, 'AcceptRequest']);
@@ -59,6 +61,7 @@ Route::prefix('teams')->group(function () {
 });
 
 //Project - Đã test
+//Activity - Done
 Route::prefix('project')->group(function () {
     Route::get('/', [ProjectController::class, 'index'])->middleware('auth:api');
     Route::post('/', [ProjectController::class, 'store'])->middleware('auth:api');;

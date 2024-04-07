@@ -103,8 +103,8 @@ class FolderController extends Controller
         }
         $dataAdd = $request->all();
         $dataAdd['user_id'] = auth()->user()->id;
-        $folder = Folder::create($dataAdd)->with('user')->first();
-        $dataReturn = Folder::latest()->first();
+        $folder = Folder::create($dataAdd);
+        $dataReturn = Folder::latest()->with('user')->first();
 
         //Thêm dữ liệu vào folder permission, mac dinh la se la permission la 1 //Có quyen chinh sửa, 0: chỉ đc xem
         UserProject::where('project_id', $request->project_id)->get()->each(function ($item) use ($dataReturn) {
@@ -119,7 +119,7 @@ class FolderController extends Controller
         //Add activity
         Activities::addActivity('Folder','đã thêm mới một folder',auth()->user()->id,$request->project_id);
         return response()->json([
-            'metadata' => $folder,
+            'metadata' => $dataReturn,
             'message' => 'Create a record successfully',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK

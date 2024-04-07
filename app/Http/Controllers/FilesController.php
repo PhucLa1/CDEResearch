@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use App\Models\Activities;
+use Spatie\PdfToImage\Pdf;
 class FilesController extends Controller
 {
     /**
@@ -103,6 +104,15 @@ class FilesController extends Controller
     /**
      * Display the specified resource.
      */
+    public function convert(Request $request){
+        $file = $request->file('file');
+        $pdf = new Pdf($file);
+        $pdf->setResolution(120); // Độ phân giải của thumbnail
+        $pdf->setOutputFormat('jpg');
+        $thumbnailName = time() . '-' . $file->getClientOriginalName();
+        $thumbnail = $pdf->saveImage(public_path('FileThumbnails'), $thumbnailName);
+        return $thumbnailName;
+    }
     //Lấy hết thông tin của 1 file ra
     public function show($id)
     {
@@ -221,7 +231,10 @@ class FilesController extends Controller
             //Add lên gg drive
             $fileContent = Storage::disk('google')->get($file->url);
             Storage::disk('google')->put(time() . '.' . $file->name, $fileContent);
-            Activities::addActivity('Files',`đã thay đổi tên file {$nameInDB} sang thành {$request->name}`,auth()->user()->id,$request->project_id);
+            if($option == 1){
+                Activities::addActivity('Files',`đã thay đổi tên file {$nameInDB} sang thành {$request->name}`,auth()->user()->id,$request->project_id);
+            }
+
             return response()->json([
                 'metadata' => $fileAdd,
                 'message' => 'Thêm mới bản ghi thành công khi đổi tên',

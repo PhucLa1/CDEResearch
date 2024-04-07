@@ -62,12 +62,13 @@ class ToDoController extends Controller
         }
         $data = $request->all();
         $data['name'] = 'TODO';
-        $todo = Todo::create($data)->with('user')->with('file.user')->first();
+        $todo = Todo::create($data);
+        $dataReturn = Todo::latest()->with('user')->with('file.user')->first();
         if($request->assgin_to){
-            Mail::to($request->assgin_to)->send(new TodoMail($todo));
+            Mail::to($request->assgin_to)->send(new TodoMail($dataReturn));
         }
         return response()->json([
-            'metadata' => $todo,
+            'metadata' => $dataReturn,
             'message' => 'Tạo mới bản ghi thành công',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK

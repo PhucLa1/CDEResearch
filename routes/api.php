@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\ActivitiesController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -12,8 +11,6 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\ToDoController;
 use App\Http\Controllers\FilesController;
-use App\Models\Activities;
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -40,7 +37,6 @@ Route::get('check', [AuthController::class, 'check'])->middleware('auth:api');
 
 //CRUD
 //Tag - đã test
-// Activity - Done
 Route::prefix('tag')->group(function () {
     Route::get('showAll/{project_id}', [TagController::class, 'index'])->middleware('auth:api');
     Route::get('/{id}', [TagController::class, 'show'])->middleware('auth:api');
@@ -51,7 +47,6 @@ Route::prefix('tag')->group(function () {
 });
 
 //Teams join - Đẫ test
-//Activity - Done
 Route::prefix('teams')->group(function () {
     Route::get('/{project_id}', [JoinController::class, 'index'])->middleware('auth:api');
     Route::get('join/{project_id}/{user_id}', [JoinController::class, 'AcceptRequest']);
@@ -61,7 +56,6 @@ Route::prefix('teams')->group(function () {
 });
 
 //Project - Đã test
-//Activity - Done
 Route::prefix('project')->group(function () {
     Route::get('/', [ProjectController::class, 'index'])->middleware('auth:api');
     Route::post('/', [ProjectController::class, 'store'])->middleware('auth:api');;
@@ -99,19 +93,5 @@ Route::prefix('comment')->group(function () {
     Route::get('/{id}', [CommentController::class, 'show'])->middleware('auth:api');
 });
 
-
-//Todo - Đang làm(Đã hoàn thành)
-Route::prefix('todo')->group(function () {
-    Route::get('/{project_id}/{todo_permission}', [ToDoController::class, 'index'])->middleware('auth:api');
-    Route::post('/', [ToDoController::class, 'store'])->middleware('auth:api');
-    Route::put('/{id}/{project_id}', [ToDoController::class, 'update'])->middleware('auth:api');
-    Route::delete('/{id}/{project_id}', [ToDoController::class, 'destroy'])->middleware('auth:api');
-    Route::get('/{id}', [ToDoController::class, 'show'])->middleware('auth:api');
-});
-
-//Activities - Đang làm(Đã hoàn thành)
-Route::prefix('activities')->group(function () {
-    Route::get('/', [ActivitiesController::class, 'index'])->middleware('auth:api');
-    Route::get('/{project_id}', [ActivitiesController::class, 'listAllUserInProject'])->middleware('auth:api');
-
-});
+Route::post('upload', [FolderController::class, 'upload']);
+Route::apiResource('todo', ToDoController::class)->middleware('auth:api');

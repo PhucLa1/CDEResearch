@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use App\Models\Activities;
 class CommentController extends Controller
 {
     /**
@@ -52,6 +53,7 @@ class CommentController extends Controller
         $dataAdd = $request->all();
         $dataAdd['user_id'] = auth()->user()->id;
         $comment = Comment::create($dataAdd);
+        Activities::addActivity('Comment',`thêm mới một comment với nội dung {$request->content}`,auth()->user()->id,$request->project_id);
         return response()->json([
             'metadata' => $comment,
             'message' => 'Create a record successfully',
@@ -118,7 +120,9 @@ class CommentController extends Controller
                 'statusCode' => Response::HTTP_NOT_FOUND
             ], Response::HTTP_NOT_FOUND);
         }
+        $content = $comment->content;
         $comment->update($request->all());
+        Activities::addActivity('Comment',`đã sửa một comment từ nội dung {$content} sang nội dung {$request->content}`,auth()->user()->id,$request->project_id);
         return response()->json([
             'metadata' => $comment,
             'message' => 'Update a record successfully',
@@ -147,6 +151,7 @@ class CommentController extends Controller
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+        Activities::addActivity('Comment',`đã xóa comment {$comment->content}`,auth()->user()->id,$project_id);
         $comment->delete();
         return response()->json([
             'message' => 'Xóa bản ghi thành công',

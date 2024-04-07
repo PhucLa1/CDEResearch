@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use App\Models\Activities;
 class FilesController extends Controller
 {
     /**
@@ -89,6 +90,8 @@ class FilesController extends Controller
         if ($versions > 5) {
             FilesController::destroy($first_version);
         }
+
+        Activities::addActivity('Files',`đã thêm mới một file {$name}`,auth()->user()->id,$request->project_id);
         return response()->json([
             'metadata' => $dataAdd,
             'message' => 'Create a record successfully',
@@ -130,7 +133,7 @@ class FilesController extends Controller
             'statusCode' => Response::HTTP_OK
         ], Response::HTTP_OK);
     }
-    public function dowload($id)
+    public function dowload($id,$project_id)
     {
         $file = Files::findOrFail($id);
         if (!$file) {
@@ -145,6 +148,7 @@ class FilesController extends Controller
         $downloadsFolder = rtrim(shell_exec('echo %USERPROFILE%\Downloads'));
         $localFilePath = $downloadsFolder . '/' . $url;
         file_put_contents($localFilePath, $fileContent);
+        Activities::addActivity('Files',`đã tải file {$file->name}`,auth()->user()->id,$project_id);
         return response()->json([
             'metadata' => $file,
             'message' => 'Tải xuống thành công',
@@ -155,11 +159,10 @@ class FilesController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, $option)
     {
         $validator = Validator::make($request->all(), [
             'name' => [
@@ -218,6 +221,7 @@ class FilesController extends Controller
             //Add lên gg drive
             $fileContent = Storage::disk('google')->get($file->url);
             Storage::disk('google')->put(time() . '.' . $file->name, $fileContent);
+            Activities::addActivity('Files',`đã thay đổi tên file {$nameInDB} sang thành {$request->name}`,auth()->user()->id,$request->project_id);
             return response()->json([
                 'metadata' => $fileAdd,
                 'message' => 'Thêm mới bản ghi thành công khi đổi tên',
@@ -226,6 +230,8 @@ class FilesController extends Controller
             ], Response::HTTP_OK);
         }
         $file->update($request->all());
+        $content = $option == 2 ? `đã di chuyển file {$nameInDB} sang thư mục khác` : `thêm tag cho file {$nameInDB}`;
+        Activities::addActivity('Files',$content,auth()->user()->id,$request->project_id);
         return response()->json([
             'metadata' => $file,
             'message' => 'Update thành công',
@@ -287,6 +293,8 @@ class FilesController extends Controller
                 'statusCode' => Response::HTTP_FORBIDDEN
             ], Response::HTTP_FORBIDDEN);
         }
+        $name = Files::findOrFail($id)->name;
+        Activities::addActivity('Files',`đã xóa file {$name} khỏi dự án`,auth()->user()->id,$project_id);
         Files::destroy($id);
     }
 }

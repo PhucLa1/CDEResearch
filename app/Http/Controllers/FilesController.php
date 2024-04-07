@@ -6,18 +6,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
 use App\Models\Files;
+use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Validation\Rule;
 class FilesController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        //
-    }
+
 
     /**
      * Show the form for creating a new resource.
@@ -57,10 +55,12 @@ class FilesController extends Controller
         //Get versions last
         $version = Files::where('status', '=', 1)
             ->where('name', '=', $name)->orderBy('created_at', 'desc')->first();
+
         $canUpdate = false;
         if ($version) { //exsists
             $first_version = $version->first_version;
             $versions = $version->versions + 1;
+            $version->update(['status' => 0]);
         } else { //not exists
             $canUpdate = true; //Mình sẽ cho tạm version đầu là 0, rồi về sau update
             $first_version = 0;
@@ -119,32 +119,18 @@ class FilesController extends Controller
         ], Response::HTTP_OK);
     }
 
-    public function historyOfFiles($id)
+    public function historyOfFiles($first_version)
     {
+        $historyFiles = Files::where('first_version', $first_version)
+            ->get();
+        return response()->json([
+            'metadata' => $historyFiles,
+            'message' => 'Lấy ra các files cũ thành công',
+            'status' => 'success',
+            'statusCode' => Response::HTTP_OK
+        ], Response::HTTP_OK);
     }
     public function dowload($id)
-    {
-    }
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
     {
         $file = Files::findOrFail($id);
         if (!$file) {
@@ -153,6 +139,122 @@ class FilesController extends Controller
                 "message" => 'Không tìm thấy file đó đâu',
                 'statusCode' => Response::HTTP_NOT_FOUND
             ], Response::HTTP_NOT_FOUND);
+        }
+        $url = $file->url;
+        $fileContent = Storage::disk('google')->get($url);
+        $downloadsFolder = rtrim(shell_exec('echo %USERPROFILE%\Downloads'));
+        $localFilePath = $downloadsFolder . '/' . $url;
+        file_put_contents($localFilePath, $fileContent);
+        return response()->json([
+            'metadata' => $file,
+            'message' => 'Tải xuống thành công',
+            'status' => 'success',
+            'statusCode' => Response::HTTP_OK
+        ], Response::HTTP_OK);
+    }
+    /**
+     * Show the form for editing the specified resource.
+     */
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => [
+                'required',
+                Rule::unique('files')->where(function ($query) use ($request,$id) {
+                    return $query->where('project_id', $request->project_id)
+                    ->where('folder_id', $request->folder_id)
+                    ->where('id', '!=', $id);
+                })
+            ],
+            'folder_id' => 'required',
+            'project_id' => 'required',
+        ], [
+            'name.required' => 'Tên phải điền',
+            'name.unique' => 'Tên file đã trùng',
+            'parent_id.required' => 'Không được để trống ID của folder cha',
+            'project_id.required' => 'Không được để trống id của project',
+        ]);
+        if ($validator->fails()) {
+            return response([
+                "status" => "error",
+                "message" => $validator->errors(),
+                'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+        $file = Files::findOrFail($id);
+        if(User::returnRole($request->project_id) != 1 || $file->user_id != auth()->user()->id){
+            return response([
+                "status" => "error",
+                "message" => 'Không phải admin, cũng như người upload file nên không có quyền chỉnh sửa',
+                'statusCode' => Response::HTTP_FORBIDDEN
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        $nameInDB = $file->name;
+        $name = $request->name;
+        if($nameInDB !== $name){ //Thay tên khác, thêm 1 ver
+            //Thêm dữ liệu mới
+            if($file->versions == 5){
+                //Xóa file
+                FilesController::destroy($file->first_version);
+            }
+            $file->update(['status' => 0]);
+            $fileAdd = Files::create([
+                'folder_id' => $request->folder_id,
+                'project_id' => $request->project_id,
+                'name' => $request->name,
+                'size' => $file->size,
+                'user_id' => auth()->user()->id,
+                'versions' => $file->versions+1,
+                'url' =>  time() . '.' . $file->name,
+                'first_version' => $file->first_version
+            ]);
+
+
+            //Add lên gg drive
+            $fileContent = Storage::disk('google')->get($file->url);
+            Storage::disk('google')->put(time() . '.' . $file->name, $fileContent);
+            return response()->json([
+                'metadata' => $fileAdd,
+                'message' => 'Thêm mới bản ghi thành công khi đổi tên',
+                'status' => 'success',
+                'statusCode' => Response::HTTP_OK
+            ], Response::HTTP_OK);
+        }
+        $file->update($request->all());
+        return response()->json([
+            'metadata' => $file,
+            'message' => 'Update thành công',
+            'status' => 'success',
+            'statusCode' => Response::HTTP_OK
+        ], Response::HTTP_OK);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public static function destroy($id)
+    {
+        $file = Files::findOrFail($id);
+        if (!$file) {
+            return response([
+                "status" => "error",
+                "message" => 'Không tìm thấy file đó đâu',
+                'statusCode' => Response::HTTP_NOT_FOUND
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($file->status == 1) {
+            $deletedFile = Files::where('first_version', $file->first_version)->delete();
+            return response()->json([
+                'message' => 'Xóa bản ghi thành công',
+                'status' => 'success',
+                'statusCode' => Response::HTTP_OK
+            ], Response::HTTP_OK);
         }
         //GIảm version đi 1
         $effectedFile = Files::where('first_version', $file->first_version)->update(['versions' => DB::raw('versions - 1')]);
@@ -170,12 +272,21 @@ class FilesController extends Controller
         $firstVersionId = $firstVersion->id;
         //CHuyển version các thằng kia về như cũ
         $effectedFileFirstVersion = Files::where('first_version', $file->first_version)->update(['first_version' => $firstVersionId]);
-
-
         return response()->json([
             'message' => 'Xóa bản ghi thành công',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK
         ], Response::HTTP_OK);
+    }
+
+    public function deleteByPermis($id,$project_id){
+        if(User::returnRole($project_id) != 1){
+            return response([
+                "status" => "error",
+                "message" => 'Không phải admin không có quyền xóa file',
+                'statusCode' => Response::HTTP_FORBIDDEN
+            ], Response::HTTP_FORBIDDEN);
+        }
+        Files::destroy($id);
     }
 }

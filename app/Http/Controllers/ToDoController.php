@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Mail;
+use App\Mail\TodoMail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
@@ -61,10 +62,12 @@ class ToDoController extends Controller
         }
         $data = $request->all();
         $data['name'] = 'TODO';
-        $todo = Todo::create($data);
-        $returnData = Todo::find($todo->id);
+        $todo = Todo::create($data)->with('user')->with('file.user')->first();
+        if($request->assgin_to){
+            Mail::to($request->assgin_to)->send(new TodoMail($todo));
+        }
         return response()->json([
-            'metadata' => $returnData,
+            'metadata' => $todo,
             'message' => 'Tạo mới bản ghi thành công',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK

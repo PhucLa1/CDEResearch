@@ -14,13 +14,14 @@ return new class extends Migration
         Schema::create('todo', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name')->nullable();
-            $table->integer('assgin_to')->nullable();
+            $table->string('assgin_to')->nullable();
             $table->unsignedInteger('files_id')->nullable();
             $table->string('title');
             $table->text('descriptions')->nullable();
             $table->dateTime('start_date');
             $table->dateTime('finish_date');
-            $table->tinyInteger('priorities');
+            $table->tinyInteger('priorities')->default(1);
+            $table->tinyInteger('status')->default(1);
             $table->string('tag')->nullable();
             $table->unsignedInteger('project_id');
             $table->timestamps();

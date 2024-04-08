@@ -11,6 +11,8 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\ToDoController;
 use App\Http\Controllers\FilesController;
+use App\Http\Controllers\ActivitiesController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -65,26 +67,29 @@ Route::prefix('project')->group(function () {
 });
 
 //Folder - Đang làm(Da Hoan Thanh)
+//Activity - Done
 Route::prefix('folder')->group(function () {
     Route::get('/{project_id}/{folder_id}', [FolderController::class, 'listFolderAndFiles'])->middleware('auth:api');
     Route::get('/', [FolderController::class, 'listFolderCanMove'])->middleware('auth:api');
     Route::get('/{id}', [FolderController::class, 'show'])->middleware('auth:api');
     Route::post('/', [FolderController::class, 'store'])->middleware('auth:api');
-    Route::put('/{id}', [FolderController::class, 'update'])->middleware('auth:api');
+    Route::put('/{id}/{option}', [FolderController::class, 'update'])->middleware('auth:api');
     Route::delete('/{id}/{project_id}', [FolderController::class, 'destroy'])->middleware('auth:api');
 });
 
 //Files - Đang làm(Đã hoàn thành)
+//Activity - Done
 Route::prefix('files')->group(function () {
     Route::post('/', [FilesController::class, 'store'])->middleware('auth:api');
     Route::get('/history/{first_version}', [FilesController::class, 'historyOfFiles'])->middleware('auth:api');
-    Route::get('/download/{id}', [FilesController::class, 'dowload'])->middleware('auth:api');
-    Route::put('/{id}', [FilesController::class, 'update'])->middleware('auth:api');
+    Route::get('/dowload/{id}/{project_id}', [FilesController::class, 'dowload'])->middleware('auth:api');
+    Route::put('/{id}/{option}', [FilesController::class, 'update'])->middleware('auth:api');
     Route::delete('/{id}/{project_id}', [FilesController::class, 'deleteByPermis'])->middleware('auth:api');
     Route::get('/{id}', [FilesController::class, 'show'])->middleware('auth:api');
 });
 
 //Comment - Đang làm(Đã hoàn thành)
+//Activity - Done
 Route::prefix('comment')->group(function () {
     Route::get('/{type}/{another_id}', [CommentController::class, 'index'])->middleware('auth:api');
     Route::post('/', [CommentController::class, 'store'])->middleware('auth:api');
@@ -93,5 +98,18 @@ Route::prefix('comment')->group(function () {
     Route::get('/{id}', [CommentController::class, 'show'])->middleware('auth:api');
 });
 
-Route::post('upload', [FolderController::class, 'upload']);
-Route::apiResource('todo', ToDoController::class)->middleware('auth:api');
+
+//Todo - Đang làm(Đã hoàn thành)
+Route::prefix('todo')->group(function () {
+    Route::get('/{project_id}/{todo_permission}', [ToDoController::class, 'index'])->middleware('auth:api');
+    Route::post('/', [ToDoController::class, 'store'])->middleware('auth:api');
+    Route::put('/{id}/{project_id}', [ToDoController::class, 'update'])->middleware('auth:api');
+    Route::delete('/{id}/{project_id}', [ToDoController::class, 'destroy'])->middleware('auth:api');
+    Route::get('/{id}', [ToDoController::class, 'show'])->middleware('auth:api');
+});
+
+//Activities - Đang làm(Đã hoàn thành)
+Route::prefix('activities')->group(function () {
+    Route::get('/', [ActivitiesController::class, 'index'])->middleware('auth:api');
+    Route::get('/{project_id}', [ActivitiesController::class, 'listAllUserInProject'])->middleware('auth:api');
+});

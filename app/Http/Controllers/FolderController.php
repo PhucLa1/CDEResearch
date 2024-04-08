@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Activities;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
@@ -115,6 +116,8 @@ class FolderController extends Controller
             ]);
         });
 
+        //Add activity
+        Activities::addActivity('Folder', 'đã thêm mới một folder', auth()->user()->id, $request->project_id);
         return response()->json([
             'metadata' => $folder,
             'message' => 'Create a record successfully',
@@ -175,7 +178,7 @@ class FolderController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, $option) //option = 1,2,3 : name, move folder, them tag
     {
         $validator = Validator::make($request->all(), [
             'name' => [
@@ -219,7 +222,14 @@ class FolderController extends Controller
         }
         $dataAdd = $request->all();
         $dataAdd['user_id'] = auth()->user()->id;
+        $name = $folder->name;
+        $folderParentName = Folder::findOrFail($request->parent_id);
         $folder->update($dataAdd);
+
+        //Add activity
+        $content = $option == 1 ? `đã thay đổi tên folder {$name} sang tên {$folder->name}` : ($option == 2 ? `đã di chuyển folder {$folder->name} trong folder {$folderParentName->name}` :
+                `thêm tag vào folder {$folder->name}`);
+        Activities::addActivity('Folder', $content, auth()->user()->id, $request->project_id);
         return response()->json([
             'metadata' => $folder,
             'message' => 'Update a record successfully',
@@ -248,7 +258,9 @@ class FolderController extends Controller
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+        $name = $folder->name;
         $folder->delete();
+        Activities::addActivity('Folder', `đã xóa folder {$name}`, auth()->user()->id, $project_id);
         return response()->json([
             'message' => 'Delete One Record Successfully',
             'status' => 'success',

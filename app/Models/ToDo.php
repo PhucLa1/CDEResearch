@@ -14,7 +14,7 @@ class ToDo extends Model
     protected $fillable = [
         'name', 'files_id ', 'title',
         'descriptions', 'start_date', 'finish_date',
-        'priorities', 'tag', 'project_id', 'assgin_to'
+        'priorities', 'tag', 'project_id', 'assgin_to','status','user_create'
     ];
     protected $casts = [
         'tag' => TagCast::class,

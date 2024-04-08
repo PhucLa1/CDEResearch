@@ -39,7 +39,7 @@
             </div>
         </div>
     @endif
-    <button  type="button" class="btn btn-primary"><a href="">View Todo</a></button>
+    <button type="button" class="btn btn-primary"><a href="">View Todo</a></button>
     <p>Nếu bạn là người mới ở CDE Rearsch hãy đăng kí tại <a href="#">đây</a></p>
     <p>Làm ơn không trả lời tin email này. Vì nó là email tự động được gửi khi có người được mời vào dự án</p>
 </body>

@@ -29,9 +29,13 @@ class FolderController extends Controller
             ->get();
         $files = Files::where('project_id', '=', $project_id)
             ->where('folder_id', '=', $parent_id)
-            ->where('status','=',1)
+            ->where('status', '=', 1)
             ->with('user')
             ->get();
+        $files->map(function ($file) {
+            $file->url = Storage::disk('google')->url($file->filename);
+            return $file;
+        });
         $dataReturn = [
             'folders' => $folders,
             'files' => $files
@@ -44,33 +48,33 @@ class FolderController extends Controller
         ], Response::HTTP_OK);
     }
 
-    public function listFolderCanMove(Request $request){
+    public function listFolderCanMove(Request $request)
+    {
         $type = $request->type; //folder hoặc files
         $parent_id = $request->parent_id; //0,
         $project_id = $request->project_id; //
         $folder_id = $request->folder_id; //folder_id là cái folder đang di chuyển
-        if($type == 'files'){
+        if ($type == 'files') {
             $folderCanMove = Folder::where('project_id', '=', $project_id)
-            ->where('parent_id', '=', $parent_id)
-            ->get();
+                ->where('parent_id', '=', $parent_id)
+                ->get();
             return response()->json([
                 'metadata' => $folderCanMove,
                 'message' => 'Get all records from Folder',
                 'status' => 'success',
                 'statusCode' => Response::HTTP_OK
             ], Response::HTTP_OK);
-        }else{
+        } else {
             $folderCanMove = Folder::where('project_id', '=', $project_id)
-            ->where('parent_id', '=', $parent_id)
-            ->where('id','!=',$folder_id)
-            ->get();
+                ->where('parent_id', '=', $parent_id)
+                ->where('id', '!=', $folder_id)
+                ->get();
             return response()->json([
                 'metadata' => $folderCanMove,
                 'message' => 'Get all records from Folder',
                 'status' => 'success',
                 'statusCode' => Response::HTTP_OK
             ], Response::HTTP_OK);
-
         }
     }
 
@@ -83,7 +87,7 @@ class FolderController extends Controller
             'name' => [
                 'required',
                 Rule::unique('folder')->where(function ($query) use ($request) {
-                    return $query->where('project_id', $request->project_id)->where('parent_id',$request->parent_id);
+                    return $query->where('project_id', $request->project_id)->where('parent_id', $request->parent_id);
                 })
             ],
             'parent_id' => 'required',
@@ -117,7 +121,7 @@ class FolderController extends Controller
         });
 
         //Add activity
-        Activities::addActivity('Folder','đã thêm mới một folder',auth()->user()->id,$request->project_id);
+        Activities::addActivity('Folder', 'đã thêm mới một folder', auth()->user()->id, $request->project_id);
         return response()->json([
             'metadata' => $dataReturn,
             'message' => 'Create a record successfully',
@@ -156,7 +160,8 @@ class FolderController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function show($id){
+    public function show($id)
+    {
         $folder = Folder::findOrFail($id);
         if (!$folder) {
             return response([
@@ -177,15 +182,15 @@ class FolderController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request,$id,$option) //option = 1,2,3 : name, move folder, them tag
+    public function update(Request $request, $id, $option) //option = 1,2,3 : name, move folder, them tag
     {
         $validator = Validator::make($request->all(), [
             'name' => [
                 'required',
-                Rule::unique('folder')->where(function ($query) use ($request,$id) {
+                Rule::unique('folder')->where(function ($query) use ($request, $id) {
                     return $query->where('project_id', $request->project_id)
-                    ->where('parent_id',$request->parent_id)
-                    ->where('id','!=',$id);
+                        ->where('parent_id', $request->parent_id)
+                        ->where('id', '!=', $id);
                 })
             ],
             'parent_id' => 'required',
@@ -211,8 +216,8 @@ class FolderController extends Controller
                 'statusCode' => Response::HTTP_NOT_FOUND
             ], Response::HTTP_NOT_FOUND);
         }
-        $folderPermis = FolderPermission::where('folder_id','=',$folder->id)->where('user_id','=',auth()->user()->id)->first()->permission;
-        if(User::returnRole($request->project_id) != 1 || $folderPermis != 1){
+        $folderPermis = FolderPermission::where('folder_id', '=', $folder->id)->where('user_id', '=', auth()->user()->id)->first()->permission;
+        if (User::returnRole($request->project_id) != 1 || $folderPermis != 1) {
             return response([
                 "status" => "error",
                 "message" => 'Không có quyền',
@@ -226,10 +231,9 @@ class FolderController extends Controller
         $folder->update($dataAdd);
 
         //Add activity
-        $content = $option == 1 ? `đã thay đổi tên folder {$name} sang tên {$folder->name}`:
-        ($option == 2 ? `đã di chuyển folder {$folder->name} trong folder {$folderParentName->name}`:
-        `thêm tag vào folder {$folder->name}`);
-        Activities::addActivity('Folder',$content,auth()->user()->id,$request->project_id);
+        $content = $option == 1 ? `đã thay đổi tên folder {$name} sang tên {$folder->name}` : ($option == 2 ? `đã di chuyển folder {$folder->name} trong folder {$folderParentName->name}` :
+                `thêm tag vào folder {$folder->name}`);
+        Activities::addActivity('Folder', $content, auth()->user()->id, $request->project_id);
         return response()->json([
             'metadata' => $folder,
             'message' => 'Update a record successfully',
@@ -241,17 +245,17 @@ class FolderController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id,$project_id)
+    public function destroy($id, $project_id)
     {
         $folder = Folder::find($id);
-        if(!$folder){
+        if (!$folder) {
             return response([
                 "status" => "error",
                 "message" => 'Record not found',
                 'statusCode' => Response::HTTP_NOT_FOUND
             ], Response::HTTP_NOT_FOUND);
         }
-        if(User::returnRole($project_id)!= 1){
+        if (User::returnRole($project_id) != 1) {
             return response([
                 "status" => "error",
                 "message" => 'Không phải admin nên không có quyền xóa',
@@ -260,7 +264,7 @@ class FolderController extends Controller
         }
         $name = $folder->name;
         $folder->delete();
-        Activities::addActivity('Folder',`đã xóa folder {$name}`,auth()->user()->id,$project_id);
+        Activities::addActivity('Folder', `đã xóa folder {$name}`, auth()->user()->id, $project_id);
         return response()->json([
             'message' => 'Delete One Record Successfully',
             'status' => 'success',

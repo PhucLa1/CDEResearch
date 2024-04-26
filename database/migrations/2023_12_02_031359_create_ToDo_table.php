@@ -22,6 +22,7 @@ return new class extends Migration
             $table->dateTime('finish_date');
             $table->tinyInteger('priorities')->default(1);
             $table->tinyInteger('status')->default(1);
+            $table->integer('user_create');
             $table->string('tag')->nullable();
             $table->unsignedInteger('project_id');
             $table->timestamps();

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use App\Models\Activities;
 use Spatie\PdfToImage\Pdf;
+
 class FilesController extends Controller
 {
     /**
@@ -92,7 +93,7 @@ class FilesController extends Controller
             FilesController::destroy($first_version);
         }
 
-        Activities::addActivity('Files',`đã thêm mới một file {$name}`,auth()->user()->id,$request->project_id);
+        Activities::addActivity('Files', `đã thêm mới một file {$name}`, auth()->user()->id, $request->project_id);
         return response()->json([
             'metadata' => $dataAdd,
             'message' => 'Create a record successfully',
@@ -104,19 +105,25 @@ class FilesController extends Controller
     /**
      * Display the specified resource.
      */
-    public function convert(Request $request){
-        $file = $request->file('file');
-        $pdf = new Pdf($file);
-        $pdf->setResolution(120); // Độ phân giải của thumbnail
-        $pdf->setOutputFormat('jpg');
-        $thumbnailName = time() . '-' . $file->getClientOriginalName();
-        $thumbnail = $pdf->saveImage(public_path('FileThumbnails'), $thumbnailName);
-        return $thumbnailName;
+    public function convert(Request $request)
+    {
+        $url = Storage::disk('google')->url("1713628307.Nguyen_Ngoc_Son.pdf");
+        $parsed_url = parse_url($url);
+        $query_string = $parsed_url['query'];
+        parse_str($query_string, $query_params);
+        $file_id = $query_params['id'];
+        return $file_id;
     }
     //Lấy hết thông tin của 1 file ra
     public function show($id)
     {
         $file = Files::findOrFail($id);
+        $url = Storage::disk('google')->url($file->url);
+        $parsed_url = parse_url($url);
+        $query_string = $parsed_url['query'];
+        parse_str($query_string, $query_params);
+        $file_id = $query_params['id'];
+        $file->url = `https://drive.google.com/file/d/{$file_id}/preview`;
         if (!$file) {
             return response([
                 "status" => "error",
@@ -143,7 +150,7 @@ class FilesController extends Controller
             'statusCode' => Response::HTTP_OK
         ], Response::HTTP_OK);
     }
-    public function dowload($id,$project_id)
+    public function dowload($id, $project_id)
     {
         $file = Files::findOrFail($id);
         if (!$file) {
@@ -158,7 +165,7 @@ class FilesController extends Controller
         $downloadsFolder = rtrim(shell_exec('echo %USERPROFILE%\Downloads'));
         $localFilePath = $downloadsFolder . '/' . $url;
         file_put_contents($localFilePath, $fileContent);
-        Activities::addActivity('Files',`đã tải file {$file->name}`,auth()->user()->id,$project_id);
+        Activities::addActivity('Files', `đã tải file {$file->name}`, auth()->user()->id, $project_id);
         return response()->json([
             'metadata' => $file,
             'message' => 'Tải xuống thành công',
@@ -177,10 +184,10 @@ class FilesController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => [
                 'required',
-                Rule::unique('files')->where(function ($query) use ($request,$id) {
+                Rule::unique('files')->where(function ($query) use ($request, $id) {
                     return $query->where('project_id', $request->project_id)
-                    ->where('folder_id', $request->folder_id)
-                    ->where('id', '!=', $id);
+                        ->where('folder_id', $request->folder_id)
+                        ->where('id', '!=', $id);
                 })
             ],
             'folder_id' => 'required',
@@ -199,7 +206,7 @@ class FilesController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         $file = Files::findOrFail($id);
-        if(User::returnRole($request->project_id) != 1 || $file->user_id != auth()->user()->id){
+        if (User::returnRole($request->project_id) != 1 || $file->user_id != auth()->user()->id) {
             return response([
                 "status" => "error",
                 "message" => 'Không phải admin, cũng như người upload file nên không có quyền chỉnh sửa',
@@ -209,9 +216,9 @@ class FilesController extends Controller
 
         $nameInDB = $file->name;
         $name = $request->name;
-        if($nameInDB !== $name){ //Thay tên khác, thêm 1 ver
+        if ($nameInDB !== $name) { //Thay tên khác, thêm 1 ver
             //Thêm dữ liệu mới
-            if($file->versions == 5){
+            if ($file->versions == 5) {
                 //Xóa file
                 FilesController::destroy($file->first_version);
             }
@@ -222,7 +229,7 @@ class FilesController extends Controller
                 'name' => $request->name,
                 'size' => $file->size,
                 'user_id' => auth()->user()->id,
-                'versions' => $file->versions+1,
+                'versions' => $file->versions + 1,
                 'url' =>  time() . '.' . $file->name,
                 'first_version' => $file->first_version
             ]);
@@ -231,8 +238,8 @@ class FilesController extends Controller
             //Add lên gg drive
             $fileContent = Storage::disk('google')->get($file->url);
             Storage::disk('google')->put(time() . '.' . $file->name, $fileContent);
-            if($option == 1){
-                Activities::addActivity('Files',`đã thay đổi tên file {$nameInDB} sang thành {$request->name}`,auth()->user()->id,$request->project_id);
+            if ($option == 1) {
+                Activities::addActivity('Files', `đã thay đổi tên file {$nameInDB} sang thành {$request->name}`, auth()->user()->id, $request->project_id);
             }
 
             return response()->json([
@@ -244,7 +251,7 @@ class FilesController extends Controller
         }
         $file->update($request->all());
         $content = $option == 2 ? `đã di chuyển file {$nameInDB} sang thư mục khác` : `thêm tag cho file {$nameInDB}`;
-        Activities::addActivity('Files',$content,auth()->user()->id,$request->project_id);
+        Activities::addActivity('Files', $content, auth()->user()->id, $request->project_id);
         return response()->json([
             'metadata' => $file,
             'message' => 'Update thành công',
@@ -298,8 +305,9 @@ class FilesController extends Controller
         ], Response::HTTP_OK);
     }
 
-    public function deleteByPermis($id,$project_id){
-        if(User::returnRole($project_id) != 1){
+    public function deleteByPermis($id, $project_id)
+    {
+        if (User::returnRole($project_id) != 1) {
             return response([
                 "status" => "error",
                 "message" => 'Không phải admin không có quyền xóa file',
@@ -307,7 +315,7 @@ class FilesController extends Controller
             ], Response::HTTP_FORBIDDEN);
         }
         $name = Files::findOrFail($id)->name;
-        Activities::addActivity('Files',`đã xóa file {$name} khỏi dự án`,auth()->user()->id,$project_id);
+        Activities::addActivity('Files', `đã xóa file {$name} khỏi dự án`, auth()->user()->id, $project_id);
         Files::destroy($id);
     }
 }

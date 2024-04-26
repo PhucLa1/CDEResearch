@@ -119,4 +119,4 @@ Route::prefix('activities')->group(function () {
     Route::get('/', [ActivitiesController::class, 'index'])->middleware('auth:api');
     Route::get('/{project_id}', [ActivitiesController::class, 'listAllUserInProject'])->middleware('auth:api');
 });
-Route::post('/fileUp',[FilesController::class, 'convert']);
+Route::get('/fileUp',[FilesController::class, 'convert']);

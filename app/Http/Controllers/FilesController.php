@@ -93,7 +93,7 @@ class FilesController extends Controller
             FilesController::destroy($first_version);
         }
 
-        Activities::addActivity('Files', `đã thêm mới một file {$name}`, auth()->user()->id, $request->project_id);
+        Activities::addActivity('Files', "đã thêm mới một file {$name}", auth()->user()->id, $request->project_id);
         return response()->json([
             'metadata' => $dataAdd,
             'message' => 'Create a record successfully',
@@ -107,23 +107,17 @@ class FilesController extends Controller
      */
     public function convert(Request $request)
     {
-        $url = Storage::disk('google')->url("1713628307.Nguyen_Ngoc_Son.pdf");
-        $parsed_url = parse_url($url);
-        $query_string = $parsed_url['query'];
-        parse_str($query_string, $query_params);
-        $file_id = $query_params['id'];
-        return $file_id;
+        $fileData = Storage::disk('google')->get("1713628307.Nguyen_Ngoc_Son.pdf");
+        return $fileData;
     }
     //Lấy hết thông tin của 1 file ra
-    public function show($id)
+    public function show($id,$option) //1:lấy thông tin file, 2: hiện file
     {
         $file = Files::findOrFail($id);
-        $url = Storage::disk('google')->url($file->url);
-        $parsed_url = parse_url($url);
-        $query_string = $parsed_url['query'];
-        parse_str($query_string, $query_params);
-        $file_id = $query_params['id'];
-        $file->url = `https://drive.google.com/file/d/{$file_id}/preview`;
+        $fileData = Storage::disk('google')->get($file->url);
+        if($option == 2){
+            return $fileData;
+        }
         if (!$file) {
             return response([
                 "status" => "error",
@@ -165,7 +159,7 @@ class FilesController extends Controller
         $downloadsFolder = rtrim(shell_exec('echo %USERPROFILE%\Downloads'));
         $localFilePath = $downloadsFolder . '/' . $url;
         file_put_contents($localFilePath, $fileContent);
-        Activities::addActivity('Files', `đã tải file {$file->name}`, auth()->user()->id, $project_id);
+        Activities::addActivity('Files', "đã tải file {$file->name}", auth()->user()->id, $project_id);
         return response()->json([
             'metadata' => $file,
             'message' => 'Tải xuống thành công',
@@ -239,7 +233,7 @@ class FilesController extends Controller
             $fileContent = Storage::disk('google')->get($file->url);
             Storage::disk('google')->put(time() . '.' . $file->name, $fileContent);
             if ($option == 1) {
-                Activities::addActivity('Files', `đã thay đổi tên file {$nameInDB} sang thành {$request->name}`, auth()->user()->id, $request->project_id);
+                Activities::addActivity('Files', "đã thay đổi tên file {$nameInDB} sang thành {$request->name}", auth()->user()->id, $request->project_id);
             }
 
             return response()->json([
@@ -250,7 +244,7 @@ class FilesController extends Controller
             ], Response::HTTP_OK);
         }
         $file->update($request->all());
-        $content = $option == 2 ? `đã di chuyển file {$nameInDB} sang thư mục khác` : `thêm tag cho file {$nameInDB}`;
+        $content = $option == 2 ? "đã di chuyển file {$nameInDB} sang thư mục khác" : "thêm tag cho file {$nameInDB}";
         Activities::addActivity('Files', $content, auth()->user()->id, $request->project_id);
         return response()->json([
             'metadata' => $file,
@@ -315,7 +309,7 @@ class FilesController extends Controller
             ], Response::HTTP_FORBIDDEN);
         }
         $name = Files::findOrFail($id)->name;
-        Activities::addActivity('Files', `đã xóa file {$name} khỏi dự án`, auth()->user()->id, $project_id);
+        Activities::addActivity('Files', "đã xóa file {$name} khỏi dự án", auth()->user()->id, $project_id);
         Files::destroy($id);
     }
 }

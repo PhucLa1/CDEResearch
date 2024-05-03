@@ -28,5 +28,7 @@ class Activities extends Model
             'user_id' => $user_id,
             'project_id' => $project_id
         ]);
+        $project = Project::find($project_id);
+        $project->update(['updated_at' => $dataAdd->updated_at]);
     }
 }

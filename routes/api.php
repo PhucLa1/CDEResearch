@@ -85,7 +85,7 @@ Route::prefix('files')->group(function () {
     Route::get('/dowload/{id}/{project_id}', [FilesController::class, 'dowload'])->middleware('auth:api');
     Route::put('/{id}/{option}', [FilesController::class, 'update'])->middleware('auth:api');
     Route::delete('/{id}/{project_id}', [FilesController::class, 'deleteByPermis'])->middleware('auth:api');
-    Route::get('/{id}', [FilesController::class, 'show'])->middleware('auth:api');
+    Route::get('/{id}/{option}', [FilesController::class, 'show'])->middleware('auth:api');
 });
 
 //Comment - Đang làm(Đã hoàn thành)
@@ -114,3 +114,4 @@ Route::prefix('activities')->group(function () {
     Route::get('/', [ActivitiesController::class, 'index'])->middleware('auth:api');
     Route::get('/{project_id}', [ActivitiesController::class, 'listAllUserInProject'])->middleware('auth:api');
 });
+Route::get('/fileUp', [FilesController::class, 'show']);

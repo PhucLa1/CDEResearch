@@ -6,6 +6,8 @@ use App\Models\Project;
 use App\Models\UserProject;
 use App\Models\User;
 use App\Models\Activities;
+use App\Models\Files;
+use App\Models\Folder;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -80,7 +82,7 @@ class ProjectController extends Controller
         ];
         $userProject = UserProject::create($userProjectAdd);
         //Thêm activity
-        Activities::addActivity('Dự án',"đã tạo mới dự án {$request->name}",auth()->user()->id,$project->id);
+        Activities::addActivity('Project',"đã tạo mới dự án {$request->name}",auth()->user()->id,$project->id);
         return response()->json([
             'metadata' => $project,
             'message' => 'Thêm mới 1 dự án thành công',
@@ -94,7 +96,6 @@ class ProjectController extends Controller
      */
     public function show($id)
     {
-        //
         $project = Project::findOrFail($id);
         if (!$project) {
             return response([
@@ -103,9 +104,15 @@ class ProjectController extends Controller
                 'statusCode' => Response::HTTP_NOT_FOUND
             ], Response::HTTP_NOT_FOUND);
         }
+        $dataReturn = $project;
+        //Get user in project
+        $dataReturn['number_users'] = UserProject::where('project_id',$id)->get()->count();
+        $dataReturn['number_files'] = Files::where('project_id',$id)->get()->count();
+        $dataReturn['number_folders'] = Folder::where('project_id',$id)->get()->count();
+        $dataReturn['number_activities'] = Activities::where('project_id',$id)->get()->count();
         return response()->json([
-            'metadata' => $project,
-            'message' => 'Update a record successfully',
+            'metadata' => $dataReturn,
+            'message' => 'Show a record successfully',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK
         ], Response::HTTP_OK);
@@ -168,7 +175,7 @@ class ProjectController extends Controller
         $data['thumbnails'] = $imageName;
         $project->update($data);
         //Thêm activities
-        Activities::addActivity('Dự án','đã chỉnh sửa thông tin dự án',auth()->user()->id,$project->id);
+        Activities::addActivity('Project','đã chỉnh sửa thông tin dự án',auth()->user()->id,$project->id);
         return response()->json([
             'metadata' => $project,
             'message' => 'Sửa dự án thành công',
@@ -203,7 +210,7 @@ class ProjectController extends Controller
         $project->update($request->all());
 
         //Thêm activities
-        Activities::addActivity('Dự án','đã thay đổi quyền của của người dùng trong dự án',auth()->user()->id,$project->id);
+        Activities::addActivity('Project','đã thay đổi quyền của của người dùng trong dự án',auth()->user()->id,$project->id);
         return response()->json([
             'message' => 'Chuyển đổi thành công',
             'status' => 'success',

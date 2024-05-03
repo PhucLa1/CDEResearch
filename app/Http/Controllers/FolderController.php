@@ -32,10 +32,6 @@ class FolderController extends Controller
             ->where('status', '=', 1)
             ->with('user')
             ->get();
-        $files->map(function ($file) {
-            $file->url = Storage::disk('google')->url($file->filename);
-            return $file;
-        });
         $dataReturn = [
             'folders' => $folders,
             'files' => $files
@@ -208,7 +204,7 @@ class FolderController extends Controller
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-        $folder = Folder::findOrFail($id);
+        $folder = Folder::where('id',$id)->with('user')->first();
         if (!$folder) {
             return response([
                 "status" => "error",
@@ -227,12 +223,13 @@ class FolderController extends Controller
         $dataAdd = $request->all();
         $dataAdd['user_id'] = auth()->user()->id;
         $name = $folder->name;
-        $folderParentName = Folder::findOrFail($request->parent_id);
+        $folderParent = Folder::find($request->parent_id);
+        $folderParentName = $folderParent ? $folderParent->name : "lớn nhất";
         $folder->update($dataAdd);
 
         //Add activity
-        $content = $option == 1 ? `đã thay đổi tên folder {$name} sang tên {$folder->name}` : ($option == 2 ? `đã di chuyển folder {$folder->name} trong folder {$folderParentName->name}` :
-                `thêm tag vào folder {$folder->name}`);
+        $content = $option == 1 ? "đã thay đổi tên folder {$name} sang tên {$folder->name}" : ($option == 2 ? "đã di chuyển folder {$folder->name} trong folder {$folderParentName->name}" :
+        "thêm tag vào folder {$folder->name}");
         Activities::addActivity('Folder', $content, auth()->user()->id, $request->project_id);
         return response()->json([
             'metadata' => $folder,
@@ -264,7 +261,7 @@ class FolderController extends Controller
         }
         $name = $folder->name;
         $folder->delete();
-        Activities::addActivity('Folder', `đã xóa folder {$name}`, auth()->user()->id, $project_id);
+        Activities::addActivity('Folder', "đã xóa folder {$name}", auth()->user()->id, $project_id);
         return response()->json([
             'message' => 'Delete One Record Successfully',
             'status' => 'success',

@@ -53,7 +53,7 @@ class CommentController extends Controller
         $dataAdd = $request->all();
         $dataAdd['user_id'] = auth()->user()->id;
         $comment = Comment::create($dataAdd);
-        Activities::addActivity('Comment',`thêm mới một comment với nội dung {$request->content}`,auth()->user()->id,$request->project_id);
+        Activities::addActivity('Comment',"thêm mới một comment với nội dung {$request->content}",auth()->user()->id,$request->project_id);
         return response()->json([
             'metadata' => $comment,
             'message' => 'Create a record successfully',
@@ -122,7 +122,7 @@ class CommentController extends Controller
         }
         $content = $comment->content;
         $comment->update($request->all());
-        Activities::addActivity('Comment',`đã sửa một comment từ nội dung {$content} sang nội dung {$request->content}`,auth()->user()->id,$request->project_id);
+        Activities::addActivity('Comment',"đã sửa một comment từ nội dung {$content} sang nội dung {$request->content}",auth()->user()->id,$request->project_id);
         return response()->json([
             'metadata' => $comment,
             'message' => 'Update a record successfully',
@@ -151,7 +151,7 @@ class CommentController extends Controller
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-        Activities::addActivity('Comment',`đã xóa comment {$comment->content}`,auth()->user()->id,$project_id);
+        Activities::addActivity('Comment',"đã xóa comment {$comment->content}",auth()->user()->id,$project_id);
         $comment->delete();
         return response()->json([
             'message' => 'Xóa bản ghi thành công',

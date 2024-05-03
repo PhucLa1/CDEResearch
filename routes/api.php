@@ -90,7 +90,7 @@ Route::prefix('files')->group(function () {
     Route::get('/dowload/{id}/{project_id}', [FilesController::class, 'dowload'])->middleware('auth:api');
     Route::put('/{id}/{option}', [FilesController::class, 'update'])->middleware('auth:api');
     Route::delete('/{id}/{project_id}', [FilesController::class, 'deleteByPermis'])->middleware('auth:api');
-    Route::get('/{id}', [FilesController::class, 'show'])->middleware('auth:api');
+    Route::get('/{id}/{option}', [FilesController::class, 'show'])->middleware('auth:api');
 });
 
 //Comment - Đang làm(Đã hoàn thành)

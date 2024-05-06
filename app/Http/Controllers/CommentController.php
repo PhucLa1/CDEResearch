@@ -32,7 +32,7 @@ class CommentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request,$project_id)
     {
         $validator = Validator::make($request->all(), [
             'type' => 'required',
@@ -53,7 +53,7 @@ class CommentController extends Controller
         $dataAdd = $request->all();
         $dataAdd['user_id'] = auth()->user()->id;
         $comment = Comment::create($dataAdd);
-        Activities::addActivity('Comment',"thêm mới một comment với nội dung {$request->content}",auth()->user()->id,$request->project_id);
+        Activities::addActivity('Comment',"thêm mới một comment với nội dung {$request->content}",auth()->user()->id,$project_id);
         return response()->json([
             'metadata' => $comment,
             'message' => 'Create a record successfully',

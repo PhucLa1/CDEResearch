@@ -10,7 +10,7 @@
 <body>
     <h1>CDE Rearsch</h1>
     <h2>Xin chào bạn {{ $data->user->name }}</h2>
-    <p>Bạn được giao nhiệm vụ mang tên {{ $data->name }}</p>
+    <p>Bạn được giao nhiệm vụ mang tên {{ $data->title }}</p>
     <p>Làm ơn kéo xuống dưới để có thể biết thêm chi tiết về nhiệm vụ này</p>
     <h4>Title : <span>{{ $data->title }}</span></h4>
     <h4>Description : <span>{{ $data->descriptions }}</span></h4>
@@ -39,7 +39,7 @@
             </div>
         </div>
     @endif
-    <button type="button" class="btn btn-primary"><a href="">View Todo</a></button>
+    <button type="button" class="btn btn-primary"><a href="http://localhost:3000/project/1/todo">View Todo</a></button>
     <p>Nếu bạn là người mới ở CDE Rearsch hãy đăng kí tại <a href="#">đây</a></p>
     <p>Làm ơn không trả lời tin email này. Vì nó là email tự động được gửi khi có người được mời vào dự án</p>
 </body>

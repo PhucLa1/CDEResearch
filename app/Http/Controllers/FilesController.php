@@ -83,8 +83,8 @@ class FilesController extends Controller
         $dataAdd['first_version'] = $first_version;
         //Add in db
         $fileAdd = Files::create($dataAdd);
+        $file = Files::orderBy('id', 'desc')->with('user')->first();
         if ($canUpdate == true) {
-            $file = Files::orderBy('id', 'desc')->first();
             if ($file) {
                 $file->update(['first_version' => $file->id]);
             }
@@ -95,7 +95,7 @@ class FilesController extends Controller
 
         Activities::addActivity('Files', "đã thêm mới một file {$name}", auth()->user()->id, $request->project_id);
         return response()->json([
-            'metadata' => $dataAdd,
+            'metadata' => $file,
             'message' => 'Create a record successfully',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK
@@ -189,7 +189,7 @@ class FilesController extends Controller
         ], [
             'name.required' => 'Tên phải điền',
             'name.unique' => 'Tên file đã trùng',
-            'parent_id.required' => 'Không được để trống ID của folder cha',
+            'folder_id.required' => 'Không được để trống ID của folder cha',
             'project_id.required' => 'Không được để trống id của project',
         ]);
         if ($validator->fails()) {
@@ -217,6 +217,7 @@ class FilesController extends Controller
                 FilesController::destroy($file->first_version);
             }
             $file->update(['status' => 0]);
+            $file_url = time() . '.' . $file->name;
             $fileAdd = Files::create([
                 'folder_id' => $request->folder_id,
                 'project_id' => $request->project_id,
@@ -224,14 +225,14 @@ class FilesController extends Controller
                 'size' => $file->size,
                 'user_id' => auth()->user()->id,
                 'versions' => $file->versions + 1,
-                'url' =>  time() . '.' . $file->name,
+                'url' =>  $file_url,
                 'first_version' => $file->first_version
             ]);
 
 
             //Add lên gg drive
             $fileContent = Storage::disk('google')->get($file->url);
-            Storage::disk('google')->put(time() . '.' . $file->name, $fileContent);
+            Storage::disk('google')->put($file_url, $fileContent);
             if ($option == 1) {
                 Activities::addActivity('Files', "đã thay đổi tên file {$nameInDB} sang thành {$request->name}", auth()->user()->id, $request->project_id);
             }
@@ -247,7 +248,7 @@ class FilesController extends Controller
         $content = $option == 2 ? "đã di chuyển file {$nameInDB} sang thư mục khác" : "thêm tag cho file {$nameInDB}";
         Activities::addActivity('Files', $content, auth()->user()->id, $request->project_id);
         return response()->json([
-            'metadata' => $file,
+            'metadata' => $file->with('user'),
             'message' => 'Update thành công',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK

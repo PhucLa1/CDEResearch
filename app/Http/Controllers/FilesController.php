@@ -251,7 +251,7 @@ class FilesController extends Controller
         $content = $option == 2 ? "đã di chuyển file {$nameInDB} sang thư mục khác" : "thêm tag cho file {$nameInDB}";
         Activities::addActivity('Files', $content, auth()->user()->id, $request->project_id);
         return response()->json([
-            'metadata' => $file,
+            'metadata' => $file->with('user'),
             'message' => 'Update thành công',
             'status' => 'success',
             'statusCode' => Response::HTTP_OK

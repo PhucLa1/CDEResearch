@@ -100,7 +100,7 @@ Route::prefix('comment')->group(function () {
 //Todo - Đang làm(Đã hoàn thành)
 //Activity - Done
 Route::prefix('todo')->group(function () {
-    Route::get('/{project_id}/{todo_permission}', [ToDoController::class, 'index'])->middleware('auth:api');
+    Route::get('/{project_id}', [ToDoController::class, 'index'])->middleware('auth:api');
     Route::post('/', [ToDoController::class, 'store'])->middleware('auth:api');
     Route::put('/{id}/{project_id}', [ToDoController::class, 'update'])->middleware('auth:api');
     Route::delete('/{id}/{project_id}', [ToDoController::class, 'destroy'])->middleware('auth:api');

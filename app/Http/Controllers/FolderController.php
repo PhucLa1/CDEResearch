@@ -12,6 +12,7 @@ use App\Models\Folder;
 use App\Models\Files;
 use App\Models\FolderPermission;
 use App\Models\User;
+use Exception;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
 
@@ -22,26 +23,36 @@ class FolderController extends Controller
      */
     public function listFolderAndFiles($project_id, $parent_id)
     {
+        try {
+            $folders = Folder::where('project_id', '=', $project_id)
+                ->where('parent_id', '=', $parent_id)
+                ->with('user')
+                ->get();
+            $files = Files::where('project_id', '=', $project_id)
+                ->where('folder_id', '=', $parent_id)
+                ->where('status', '=', 1)
+                ->with('user')
+                ->get();
+            $dataReturn = [
+                'folders' => $folders,
+                'files' => $files
+            ];
+            return response()->json([
+                'metadata' => $dataReturn,
+                'message' => 'Get all records from Folder,Files',
+                'status' => 'success',
+                'statusCode' => Response::HTTP_OK
+            ], Response::HTTP_OK);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error occurred while fetching data.',
+                'error' => $e->getMessage(),
+                'status' => 'error',
+                'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
         //parent id là id của folder được chọn, nếu là lớn nhất thì parent id là 0
-        $folders = Folder::where('project_id', '=', $project_id)
-            ->where('parent_id', '=', $parent_id)
-            ->with('user')
-            ->get();
-        $files = Files::where('project_id', '=', $project_id)
-            ->where('folder_id', '=', $parent_id)
-            ->where('status', '=', 1)
-            ->with('user')
-            ->get();
-        $dataReturn = [
-            'folders' => $folders,
-            'files' => $files
-        ];
-        return response()->json([
-            'metadata' => $dataReturn,
-            'message' => 'Get all records from Folder,Files',
-            'status' => 'success',
-            'statusCode' => Response::HTTP_OK
-        ], Response::HTTP_OK);
+
     }
 
     public function listFolderCanMove(Request $request)

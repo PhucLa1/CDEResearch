@@ -24,6 +24,10 @@ class ToDo extends Model
     {
         return $this->belongsTo(User::class, 'assgin_to', 'email');
     }
+    public function user_create()
+    {
+        return $this->belongsTo(User::class, 'user_create', 'id');
+    }
     public function file()
     {
         return $this->belongsTo(Files::class, 'files_id');

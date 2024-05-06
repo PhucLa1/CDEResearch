@@ -9,14 +9,15 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Models\Activities;
+
 class CommentController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index($type,$another_id)
+    public function index($type, $another_id)
     {
-        $comments = Comment::where('type',$type)->where('another_id',$another_id)->with('user')->get();
+        $comments = Comment::where('type', $type)->where('another_id', $another_id)->with('user')->get();
         return response()->json([
             'metadata' => $comments,
             'message' => 'Create a record successfully',
@@ -32,7 +33,7 @@ class CommentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, $project_id)
     {
         $validator = Validator::make($request->all(), [
             'type' => 'required',
@@ -53,7 +54,7 @@ class CommentController extends Controller
         $dataAdd = $request->all();
         $dataAdd['user_id'] = auth()->user()->id;
         $comment = Comment::create($dataAdd);
-        Activities::addActivity('Comment',`thêm mới một comment với nội dung {$request->content}`,auth()->user()->id,$request->project_id);
+        Activities::addActivity('Comment', "thêm mới một comment với nội dung {$request->content}", auth()->user()->id, $project_id);
         return response()->json([
             'metadata' => $comment,
             'message' => 'Create a record successfully',
@@ -68,7 +69,7 @@ class CommentController extends Controller
     public function show($id)
     {
         $comment = Comment::findOrFail($id);
-        if(!$comment){
+        if (!$comment) {
             return response([
                 "status" => "error",
                 "message" => 'Record not found',
@@ -91,21 +92,21 @@ class CommentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id,$project_id)
+    public function update(Request $request, $id, $project_id)
     {
         $validator = Validator::make($request->all(), [
             'content' => 'required'
         ], [
             'content.required' => 'Không được để trống nội dung',
         ]);
-        if(User::returnRole($project_id) != 1){
+        if (User::returnRole($project_id) != 1) {
             return response([
                 "status" => "error",
                 "message" => 'Không phải admin nên không có quyền sửa',
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-        if($validator->fails()){
+        if ($validator->fails()) {
             return response([
                 "status" => "error",
                 "message" => $validator->errors(),
@@ -113,7 +114,7 @@ class CommentController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         $comment = Comment::find($id);
-        if(!$comment){
+        if (!$comment) {
             return response([
                 "status" => "error",
                 "message" => 'Record not found',
@@ -122,7 +123,7 @@ class CommentController extends Controller
         }
         $content = $comment->content;
         $comment->update($request->all());
-        Activities::addActivity('Comment',`đã sửa một comment từ nội dung {$content} sang nội dung {$request->content}`,auth()->user()->id,$request->project_id);
+        Activities::addActivity('Comment', "đã sửa một comment từ nội dung {$content} sang nội dung {$request->content}", auth()->user()->id, $request->project_id);
         return response()->json([
             'metadata' => $comment,
             'message' => 'Update a record successfully',
@@ -134,24 +135,24 @@ class CommentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id,$project_id)
+    public function destroy($id, $project_id)
     {
         $comment = Comment::find($id);
-        if(!$comment){
+        if (!$comment) {
             return response([
                 "status" => "error",
                 "message" => 'Không tìm thấy ',
                 'statusCode' => Response::HTTP_NOT_FOUND
             ], Response::HTTP_NOT_FOUND);
         }
-        if(User::returnRole($project_id) != 1){
+        if (User::returnRole($project_id) != 1) {
             return response([
                 "status" => "error",
                 "message" => 'Không phải admin nên không có quyền xóa',
                 'statusCode' => Response::HTTP_INTERNAL_SERVER_ERROR
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-        Activities::addActivity('Comment',`đã xóa comment {$comment->content}`,auth()->user()->id,$project_id);
+        Activities::addActivity('Comment', "đã xóa comment {$comment->content}", auth()->user()->id, $project_id);
         $comment->delete();
         return response()->json([
             'message' => 'Xóa bản ghi thành công',

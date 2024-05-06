@@ -11,6 +11,6 @@ class Project extends Model
     protected $table = 'project';
     protected $fillable = [
                             'name','user_id','thumbnails','note','start_date',
-                            'finish_date','todo_permission','invite_permission'
+                            'finish_date','todo_permission','invite_permission','updated_at'
                         ];
 }

@@ -224,7 +224,7 @@ class FolderController extends Controller
         $dataAdd['user_id'] = auth()->user()->id;
         $name = $folder->name;
         $folderParent = Folder::find($request->parent_id);
-        $folderParentName = $folderParent == null ? "" :  $folderParent->name;
+        $folderParentName = $folderParent ? $folderParent->name : "lớn nhất";
         $folder->update($dataAdd);
 
         //Add activity
@@ -261,7 +261,7 @@ class FolderController extends Controller
         }
         $name = $folder->name;
         $folder->delete();
-        Activities::addActivity('Folder', `đã xóa folder {$name}`, auth()->user()->id, $project_id);
+        Activities::addActivity('Folder', "đã xóa folder {$name}", auth()->user()->id, $project_id);
         return response()->json([
             'message' => 'Delete One Record Successfully',
             'status' => 'success',

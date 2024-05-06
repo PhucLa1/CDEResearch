@@ -35,8 +35,6 @@ Route::get('checkRole/{project_id}', [AuthController::class, 'checkRole'])->midd
 Route::get('check', [AuthController::class, 'check'])->middleware('auth:api');
 //Google login
 
-
-
 //CRUD
 //Tag - đã test
 Route::prefix('tag')->group(function () {
@@ -92,7 +90,7 @@ Route::prefix('files')->group(function () {
 //Activity - Done
 Route::prefix('comment')->group(function () {
     Route::get('/{type}/{another_id}', [CommentController::class, 'index'])->middleware('auth:api');
-    Route::post('/', [CommentController::class, 'store'])->middleware('auth:api');
+    Route::post('/{project_id}', [CommentController::class, 'store'])->middleware('auth:api');
     Route::put('/{id}/{project_id}', [CommentController::class, 'update'])->middleware('auth:api');
     Route::delete('/{id}/{project_id}', [CommentController::class, 'destroy'])->middleware('auth:api');
     Route::get('/{id}', [CommentController::class, 'show'])->middleware('auth:api');

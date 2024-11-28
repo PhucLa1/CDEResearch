@@ -70,9 +70,12 @@ class FilesController extends Controller
             $versions = 1;
         }
 
+
+
         //Add in gg drive
         $googleFileName = time() . '.' . $name;
-        Storage::disk('google')->put($googleFileName, file_get_contents($file));
+        $request->file->move(public_path('Files'), $googleFileName);
+        //Storage::disk('google')->put($googleFileName, file_get_contents($file));
         //Prepare data to insert into db
         $dataAdd = $request->all();
         $dataAdd['name'] = $name;
